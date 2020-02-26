@@ -15,12 +15,13 @@
         <property name="subtitle" translatable="yes">Application Market</property>
         <property name="show_close_button">True</property>
         <child>
-          <object class="GtkSearchEntry">
+          <object class="GtkSearchEntry" id="SearchEntry">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="primary_icon_name">edit-find-symbolic</property>
             <property name="primary_icon_activatable">False</property>
             <property name="primary_icon_sensitive">False</property>
+            <signal name="search-changed" handler="SearchChanged" swapped="no"/>
           </object>
         </child>
         <child>
@@ -57,8 +58,8 @@
               <object class="GtkIconView" id="IconListView">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="margin_left">50</property>
-                <property name="margin_right">50</property>
+                <property name="margin_left">20</property>
+                <property name="margin_right">20</property>
                 <property name="margin_top">20</property>
                 <property name="margin_bottom">50</property>
                 <property name="margin">6</property>
