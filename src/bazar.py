@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version('Gtk','3.0')
-from gi.repository import Gtk, GdkPixbuf, Gdk
+from gi.repository import Gtk, GdkPixbuf, Gdk, Vte, GLib
 import xml.etree.ElementTree as ET
 
 IconsData = '/var/lib/appstream-extractor/export-data/appstream-flathub-x86_64-2020-02-26.04:28:37.+0000/icons/'
@@ -16,6 +16,7 @@ class BazarBack:
         self.tree = ET.parse(dataFile)
         self.root = self.tree.getroot()
         self.Components = self.root.findall('component')
+        self.Categories = []
 
     def GetAppData(self):
         self.AppData = []
@@ -66,6 +67,10 @@ class BazarBack:
             Categories = []
             for c in allCategories:
                 Categories.append(c.text)
+
+            for i in Categories:
+                if i not in self.Categories:
+                    self.Categories.append(i)
             return Categories 
         except AttributeError:
             return None
@@ -101,9 +106,13 @@ class Handler:
         Gtk.main_quit()
 
     def SelectionChanged(self, IconView):
-        selected = IconView.get_selected_items()
-        SelectedApp = listStore[selected[0][0]][1]
-        SelectedAppIcon = listStore[selected[0][0]][0]
+        try:
+            selected = IconView.get_selected_items()
+            SelectedApp = listStore[selected[0][0]][1]
+            SelectedAppIcon = listStore[selected[0][0]][0]
+        except IndexError:
+            return
+
         for i in b.bg.AppData:
             if i['name'] == SelectedApp:
                 Stack.set_visible_child_name('AppInfoPage')
@@ -130,9 +139,29 @@ class Handler:
 
 
     def InstallApp(self, widget, Data):
-        print(widget, Data)
+        Terminal = Vte.Terminal()
+        Terminal.set_scrollback_lines(1000)
+        Terminal.set_audible_bell(False)
+        pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
+        Terminal.set_pty(pty)
+        pty.spawn_async(
+            None,
+            ['/bin/flatpak','install',Data['id']],
+            None,
+            GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+            None,
+            None,
+            -1,
+            None,
+            self.ready
+        )
 
-        
+        AppInfoBox.add(Terminal)
+        Terminal.show()
+
+
+    def ready(self, pty, task):
+        print('pty',pty)
 
     def BackButtonClicked(self, *args):
         Stack.set_visible_child_name('MainPage')
@@ -149,6 +178,8 @@ AppImage = Builder.get_object('AppImage')
 DescriptionLabel = Builder.get_object('DescriptionLabel')
 InstallerButton = Builder.get_object('InstallerButton')
 
+AppInfoBox = Builder.get_object('AppInfoBox')
+
 IconListView.set_model(listStore)
 IconListView.set_pixbuf_column(0)
 IconListView.set_text_column(1)
@@ -158,6 +189,5 @@ Builder.connect_signals(Handler())
 b = Bazar()
 b.bg.GetAppData()
 b.UpdateAppsList(b.bg.AppData)
-
 Window.show_all()
 Gtk.main()
