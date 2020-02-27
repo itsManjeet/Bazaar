@@ -10,6 +10,17 @@ resource_file = 'data/ui.glade'
 
 listStore = Gtk.ListStore(GdkPixbuf.Pixbuf, str)
 
+DefaultCategories = {
+    'Development': ['Development','IDE','WebDevelopment', 'RevisionControl','AudioVideoEditing','ProjectManagement'],
+    'Games': ['Games', 'Emulator','ArcadeGame','RolePlaying','Simulation'],
+    'Multimedia': ['Audio', 'Music', 'AudioVideo','Graphics', 'Player', 'Video','AudioVideoEditing','2DGraphics', 'RasterGraphics','TV'],
+    'Office': ['Office', 'Calendar', 'WordProcessor','TextEditor','News', 'Documentation'],
+    'System': ['HardwareSettigs', 'Settings', 'Viewer', 'System', 'Security'],
+    'Education': ['DataVisualization', 'Education','MedicalSoftware', 'Science', 'Electronics', 'Network', 'Engineering', 'Literature', 'LearnToCode','Economy', 'Finance'],
+    'Communtication': ['Chat', 'Feed', 'InstantMessaging', 'P2P', 'Email', 'VideoConference','FileTransfer', 'TV', 'Telephony','News', 'WebBrowser'],
+    'Utility': ['Utility','Shooter','FileTools', 'Archiving']
+}
+
 class BazarBack:
 
     def __init__(self,dataFile):
@@ -91,6 +102,26 @@ class BazarBack:
 class Bazar:
     def __init__(self):
         self.bg = BazarBack('/var/lib/appstream-extractor/export-data/appstream-flathub-x86_64-2020-02-26.04:28:37.+0000/appstream.xml')
+        for i in DefaultCategories:
+            CategoryBox.add(self.newCategoryButton(i))
+
+    def newCategoryButton(self,CategoryName):
+        btn = Gtk.Button.new_with_label(CategoryName)
+        btn.connect('clicked',self.listCategory,CategoryName)
+        return btn
+
+    def listCategory(self,button, categoryName):
+        print('Listing %s'% categoryName)
+        catData = []
+        for i in b.bg.AppData:
+            for j in DefaultCategories[categoryName]:
+                try:
+                    if j in i['categories']:
+                        catData.append(i)
+                except TypeError:
+                    pass
+        listStore.clear()
+        b.UpdateAppsList(catData)
 
     def UpdateAppsList(self,data):
         for app in data:
@@ -177,6 +208,7 @@ AppSummaryLabel = Builder.get_object('AppSummaryLabel')
 AppImage = Builder.get_object('AppImage')
 DescriptionLabel = Builder.get_object('DescriptionLabel')
 InstallerButton = Builder.get_object('InstallerButton')
+CategoryBox = Builder.get_object('CategoryBox')
 
 AppInfoBox = Builder.get_object('AppInfoBox')
 

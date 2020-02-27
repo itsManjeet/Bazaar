@@ -65,24 +65,51 @@
         <property name="transition_duration">400</property>
         <property name="transition_type">slide-left-right</property>
         <child>
-          <object class="GtkScrolledWindow">
+          <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="shadow_type">in</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkIconView" id="IconListView">
+              <object class="GtkFlowBox" id="CategoryBox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">60</property>
+                <property name="margin_right">60</property>
+                <property name="margin_top">30</property>
+                <property name="margin_bottom">20</property>
+                <property name="max_children_per_line">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="margin_left">20</property>
-                <property name="margin_right">20</property>
-                <property name="margin_top">20</property>
-                <property name="margin_bottom">50</property>
-                <property name="margin">0</property>
-                <property name="column_spacing">1</property>
-                <property name="item_padding">2</property>
-                <property name="activate_on_single_click">True</property>
-                <signal name="selection-changed" handler="SelectionChanged" swapped="no"/>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkIconView" id="IconListView">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="margin_top">20</property>
+                    <property name="margin_bottom">50</property>
+                    <property name="margin">6</property>
+                    <property name="spacing">5</property>
+                    <property name="column_spacing">1</property>
+                    <property name="item_padding">1</property>
+                    <property name="activate_on_single_click">True</property>
+                    <signal name="selection-changed" handler="SelectionChanged" swapped="no"/>
+                  </object>
+                </child>
               </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
             </child>
           </object>
           <packing>
