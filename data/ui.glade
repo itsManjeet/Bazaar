@@ -4,7 +4,7 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkWindow" id="mainWindow">
     <property name="can_focus">False</property>
-    <property name="default_width">1205</property>
+    <property name="default_width">1100</property>
     <property name="default_height">800</property>
     <signal name="destroy" handler="OnMainDestroy" swapped="no"/>
     <child type="titlebar">
@@ -59,56 +59,66 @@
       </object>
     </child>
     <child>
-      <object class="GtkStack" id="Stack">
+      <object class="GtkStack" id="bazaarPage">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="transition_duration">400</property>
+        <property name="transition_duration">600</property>
         <property name="transition_type">slide-left-right</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkFlowBox" id="CategoryBox">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_left">60</property>
-                <property name="margin_right">60</property>
-                <property name="margin_top">30</property>
-                <property name="margin_bottom">20</property>
-                <property name="max_children_per_line">5</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkPaned">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkIconView" id="IconListView">
+                  <object class="GtkFlowBox" id="CategoryBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">50</property>
+                    <property name="margin_right">50</property>
+                    <property name="margin_top">20</property>
+                    <property name="margin_bottom">20</property>
+                  </object>
+                  <packing>
+                    <property name="resize">False</property>
+                    <property name="shrink">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="margin_top">20</property>
-                    <property name="margin_bottom">50</property>
-                    <property name="margin">6</property>
-                    <property name="spacing">5</property>
-                    <property name="column_spacing">1</property>
-                    <property name="item_padding">1</property>
-                    <property name="activate_on_single_click">True</property>
-                    <signal name="selection-changed" handler="SelectionChanged" swapped="no"/>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkIconView" id="appList_iconview">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="margin_left">10</property>
+                        <property name="margin_right">10</property>
+                        <property name="margin_top">20</property>
+                        <property name="margin_bottom">50</property>
+                        <property name="margin">6</property>
+                        <property name="spacing">5</property>
+                        <property name="column_spacing">1</property>
+                        <property name="item_padding">1</property>
+                        <property name="activate_on_single_click">True</property>
+                        <signal name="selection-changed" handler="SelectionChanged" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">True</property>
+                  </packing>
                 </child>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
@@ -121,8 +131,8 @@
           <object class="GtkBox" id="AppInfoBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">20</property>
-            <property name="margin_right">20</property>
+            <property name="margin_left">50</property>
+            <property name="margin_right">50</property>
             <property name="margin_top">20</property>
             <property name="margin_bottom">50</property>
             <property name="orientation">vertical</property>
@@ -160,7 +170,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImage" id="AppImage">
+                      <object class="GtkImage" id="appLogo_image">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="stock">gtk-missing-image</property>
@@ -178,7 +188,7 @@
                         <property name="margin_left">20</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkLabel" id="AppNameLabel">
+                          <object class="GtkLabel" id="appName_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
@@ -197,7 +207,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="AppSummaryLabel">
+                          <object class="GtkLabel" id="appSum_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">AppSummaryLabel</property>
@@ -224,7 +234,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="InstallerButton">
+                  <object class="GtkButton" id="appInstall_button">
                     <property name="label" translatable="yes">Install</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -246,16 +256,33 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="DescriptionLabel">
+              <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="valign">start</property>
-                <property name="margin_top">50</property>
-                <property name="label" translatable="yes">DescriptionLabel</property>
-                <property name="wrap">True</property>
-                <attributes>
-                  <attribute name="scale" value="1.2"/>
-                </attributes>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <child>
+                      <object class="GtkLabel" id="appDesc_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">start</property>
+                        <property name="margin_left">50</property>
+                        <property name="margin_right">50</property>
+                        <property name="margin_top">50</property>
+                        <property name="label" translatable="yes">DescriptionLabel</property>
+                        <property name="wrap">True</property>
+                        <attributes>
+                          <attribute name="scale" value="1.2"/>
+                        </attributes>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">True</property>
