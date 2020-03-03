@@ -4,7 +4,7 @@ class FlatPak:
     def __init__(self, data_file):
         self.data_file = data_file
 
-    def GenAppsData(self):
+    def getApps(self):
         self.tree = ET.parse(self.data_file)
         self.root = self.tree.getroot()
         self.components = self.root.findall('component')
@@ -67,13 +67,14 @@ class FlatPak:
         return icons
 
     def __get_categories(self, component):
-        categories = []
+        categories = ['flatpak']
         try:
             for c in component.findall('categories'):
                 for cd in c.findall('category'):
                     categories.append(cd.text)
                     if cd.text not in self.categories:
                         self.categories.append(cd.text)
+            return categories
 
         except AttributeError:
             return None
@@ -138,15 +139,8 @@ class FlatPak:
     
         return depends
 
-    def GetApp(self, app):
-        for i in self.appdata:
-            if i['name'] == app:
-                return i
-        return None
-
     def Install(self, app):
         try:
-            print(self.GetApp(app))
             appID = self.GenApp(app)['id']
             return ['flatpak','install',appID, '-y']
         

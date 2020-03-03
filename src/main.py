@@ -3,34 +3,52 @@ gi.require_version('Gtk','3.0')
 gi.require_version('Vte', '2.91')
 from gi.repository import Gtk, GdkPixbuf, Gdk, Vte, GLib
 from bazaar import Bazaar
+import threading
 
 resourceFile = 'data/ui.glade'
 listStore = Gtk.ListStore(GdkPixbuf.Pixbuf, str)
 
 def UpdateAppPage(data):
     for app in data:
-        if len(app['icons']) < 1:
-            img = Gtk.IconTheme.get_default().load_icon('gtk-missing-image',64, 0)
-        elif app['icons'][0]['type'] == 'cached':
-            img = GdkPixbuf.Pixbuf.new_from_file(bazaar.getAppIcon(app))
-        
+        try:
+            if len(app['icons']) < 1:
+                try:
+                    img = Gtk.IconTheme.get_default().load_icon(app['name'],64, 0)
+                except gi.repository.GLib.Error:
+                    img = Gtk.IconTheme.get_default().load_icon('package-x-generic',64, 0)
+            elif app['icons'][0]['type'] == 'cached':
+                img = GdkPixbuf.Pixbuf.new_from_file(bazaar.getAppIcon(app))
+        except TypeError:
+            continue
         listStore.append([img,app['name']])
 
 
 def BuildCategories(container):
-    defaultCategories = [ 'Accessories', 'Development', 'Games', 'Graphics', 'Internet', 'Multimedia', 'Office', 'System', 'Settings' ]
+    defaultCategories = {
+        'Accessories': ['Calendar', 'Viewer', 'Emulator', 'Utility', 'VideoConference', 'FileTransfer', 'FileTools', 'Archiving', 'TextEditor', 'Publishing', 'Presentation', 'Sequencer', 'RemoteAccess', 'OCR', 'Scanning', 'PackageManager', 'Application', 'Calculator', 'Dictionary', 'Maps', 'Clock', 'Chart', 'FileManager', 'Productivity', 'Spreadsheet'],
+        'Education': ['Literature', 'LearnToCode', 'Documentation', 'Astronomy','Math', 'Robotics', 'Physics', 'Matrix', 'GUIDesigner', 'NumericalAnalysis', 'Chemistry', 'Geography', 'Geoscience'],
+        'Development': ['Development','DataVisualization', 'IDE', 'WebDevelopment', 'RevisionControl', 'ProjectManagement', 'Publishing', 'Java', 'ContactManagment', 'Debugger', 'Profiling', 'GUIDesigner', 'Productivity'],
+        'Games': ['Emulator', 'Games', 'ArcadeGame', 'RolePlaying', 'Shooter','Simulation', 'StrategyGame', 'ActionGame', 'AdventureGame', 'CardGame', 'LogicGame', 'BlocksGame', 'BoardGame', 'SportsGame', 'KidsGame', 'Adventure', 'Games', 'Role Playing'],
+        'Internet': ['Chat','Feed','InstantMessaging', 'Network', 'P2P', 'Email', 'VideoConference', 'Telephony', 'News', 'WebBrowser', 'IRCClient', 'HamRadio', 'Internet', 'Communication'],
+        'Multimedia': ['Audio', 'AudioVideo', 'Music', 'Chat', 'Email', 'Player', 'Video', 'VideoConference', 'AudioVideoEditing', '2DGraphics', 'RasterGraphics', 'TV', 'Graphics', 'GTK', 'Photography', 'Qt', 'Recorder', '3DGraphics', 'Tuner', 'HamRadio', 'ImageProcessing', 'VectorGraphics', 'GUIDesigner', 'Art', 'Mixer'],
+        'Office': ['Office', 'DataVisualization', 'Education', 'MedicalSoftware','Science', 'Electronics', 'Engineering', 'WordProcessor', 'VideoConference', 'Literature', 'ProjectManagement', 'Economy', 'Finance', 'Documentation', 'Presentation', 'Productivity', 'Spreadsheet'],
+        'System': ['System', 'Security', 'ConsoleOnly', 'Monitor', 'FileSystem', 'Languages', 'Translation'],
+        'Settings': ['HardwareSettings', 'DesktopSettings', ]
+    }
     for c in defaultCategories:
         btn = Gtk.Button.new_with_label(c)
-        btn.connect('clicked', UpdateCategories, c)
+        btn.connect('clicked', UpdateCategories, defaultCategories[c])
         container.add(btn)
 
 def UpdateCategories(widget, category):
     listStore.clear()
     apps = bazaar.getAppsFromCategory(category)
-    print(apps)
     UpdateAppPage(apps)
 
 class Hander:
+    def __init__(self):
+        self.isSearching = False
+
     def OnMainDestroy(self, *args):
         Gtk.main_quit()
 
@@ -43,12 +61,20 @@ class Hander:
         except IndexError:
             return
 
-        selectedApp = bazaar.GetApp(appName)
+        selectedApp = bazaar.getApp(appName)
         self.__updateAppPage(selectedApp, appIcon)
         bazaarPage.set_visible_child_name('AppInfoPage')
 
-    def SearchChanged(self, *args):
-        print('text changed')    
+    def SearchChanged(self, searchBox):
+        listStore.clear()
+        searchBoxText = searchBox.get_text().lower()
+        data = []
+        for x in bazaar.appdata:
+            if searchBoxText in x['name'].lower() or searchBoxText in x['summary'].lower() or searchBoxText in x['description'].lower():
+               data.append(x)
+
+        UpdateAppPage(data)
+
     
     def BackButtonClicked(self, *args):
         bazaarPage.set_visible_child_name('MainPage')
@@ -65,7 +91,6 @@ class Hander:
         print(bazaar.Install(app))
 
 
-        
 bazaar = Bazaar()
 builder = Gtk.Builder()
 builder.add_from_file(resourceFile)
@@ -91,6 +116,5 @@ appList_iconview.set_text_column(1)
 
 UpdateAppPage(bazaar.getApps())
 BuildCategories(categoryBox)
-
 window.show_all()
 Gtk.main()

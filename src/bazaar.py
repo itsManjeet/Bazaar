@@ -1,5 +1,5 @@
 from flatpakBazaar import FlatPak
-
+from releaxBazaar import Releax
 
 flatpakFile = '/var/lib/appstream-extractor/export-data/appstream-flathub-x86_64-2020-02-26.04:28:37.+0000/appstream.xml'
 iconsData = '/var/lib/appstream-extractor/export-data/appstream-flathub-x86_64-2020-02-26.04:28:37.+0000/icons/'
@@ -8,31 +8,36 @@ iconsData = '/var/lib/appstream-extractor/export-data/appstream-flathub-x86_64-2
 class Bazaar:
     def __init__(self):
         self.flatpak = FlatPak(flatpakFile)
+        self.releax = Releax('/usr/recipies/')
     
     def getApps(self):
-        self.appData = self.flatpak.GenAppsData()
+        self.appdata = self.flatpak.getApps()
+        self.appdata += self.releax.getApps()
 
-        return self.appData
+        self.categories = self.flatpak.categories
 
-    def GetApp(self, app):
-        flatpakApp = self.flatpak.GetApp(app)
-        if flatpakApp is None:
-            return None
-        
-        return flatpakApp
+        return self.appdata
+
+    def getApp(self, app):
+        for i in self.appdata:
+            if i['name'] == app:
+                return i
+        return None
 
     def getAppIcon(self, app):
         return iconsData + '/64x64/' + app['icons'][0]['file']
 
-    def getAppsFromCategory(self, categoryName):
+    def getAppsFromCategory(self, categoryArr):
         apps = []
-        for a in self.appData:
+        for a in self.appdata:
             if a['categories'] is None:
                 continue
-            elif categoryName in a['categories']:
-                apps.append(a)
+            for c in a['categories']:
+                if c in categoryArr:
+                    if a not in apps:
+                        apps.append(a)
 
         return apps
 
     def Install(self, app):
-        return self.flatpak.Install(app)
+        print('installating %s app %s' % (app['type'],app['name']))
