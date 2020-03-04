@@ -23,6 +23,13 @@ class Releax:
         
         return self.appdata
 
+    def getApp(self, app):
+        for i in self.appdata:
+            if i['name'] == app:
+                return i
+        return None
+
+
     def __read_recipie(self, recipieDir):
         #iconFile = os.path.join(recipieDir, 'icon.png')
         recipieFile = os.path.join(recipieDir, 'recipie')
@@ -34,17 +41,22 @@ class Releax:
             'license': self.__get_comment(recipieFile, 'License'),
             'developer': ' ',
             'icons': [],
-
+            'repo': recipieDir,
             'categories': [
                 'releax'
             ],
             'keywords': ['releax'],
 
-            'url': self.__get_comment(recipieFile, 'URL'),
+            'url': [
+                {
+                    'type': 'home',
+                    'address': self.__get_comment(recipieFile, 'URL')
+                }
+            ],
             'type': 'releax'
             }
         return a
-        
+
     def __get_comment(self, recipieFile, valof):
         with open(recipieFile, 'r') as openFile:
             for line in openFile.readlines():
@@ -68,5 +80,51 @@ class Releax:
                     return line[line.find('=')+1:].lstrip().strip()
         
         return ''
+
+    def getDepends(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        result = subprocess.run(['app','dp', app['name']], stdout=subprocess.PIPE)
+        deps = result.stdout.decode('utf-8').splitlines()
+        a = []
+        for i in deps:
+            i = i[i.find(' ')+1:]
+            a.append(i)
+        return a
+
+    def getInstallCMD(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        return ['/usr/bin/app','in', app['name'], '--no-ask']
+
+    def isInstall(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+        
+        result = subprocess.run(['ls','/var/lib/app/'], stdout=subprocess.PIPE)
+        result = result.stdout.decode('utf-8')
+        for a in result.splitlines():
+            if a == app['name']:
+                return True
+        
+        return False
+
+    def install(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+        
+        result = subprocess.run(['app','in', app['name'], '--no-ask'])
+        return result.returncode
+
 
     

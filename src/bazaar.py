@@ -39,5 +39,52 @@ class Bazaar:
 
         return apps
 
-    def Install(self, app):
-        print('installating %s app %s' % (app['type'],app['name']))
+    def getDepends(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        if app['type'] == 'releax':
+            return self.releax.getDepends(app)
+        elif app['type'] == 'flatpak':
+            return self.flatpak.getDepends(app)
+        else:
+            return -3
+
+    def getInstallCMD(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        if app['type'] == 'releax':
+            return self.releax.getInstallCMD(app)
+        elif app['type'] == 'flatpak':
+            return self.flatpak.getInstallCMD(app)
+        else:
+            return ['/usr/bin/sh','echo','"dont know how to install %s"' % app['id']]
+
+    def isInstall(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        if app['type'] == 'releax':
+            return self.releax.isInstall(app)
+        elif app['type'] == 'flatpak':
+            return self.flatpak.isInstall(app)
+        else:
+            return False
+
+    def install(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        if app['type'] == 'releax':
+            return self.releax.install(app)
+        else:
+            print('not yet implemented')

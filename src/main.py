@@ -4,9 +4,35 @@ gi.require_version('Vte', '2.91')
 from gi.repository import Gtk, GdkPixbuf, Gdk, Vte, GLib
 from bazaar import Bazaar
 import threading
+import os
 
 resourceFile = 'data/ui.glade'
 listStore = Gtk.ListStore(GdkPixbuf.Pixbuf, str)
+
+def ErrorDialog(errMessage, toexit = False):
+    dialog = Gtk.MessageDialog(
+        None, 0, Gtk.MessageType.ERROR,
+        Gtk.ButtonsType.CANCEL,
+        errMessage,
+    )
+
+    dialog.run()
+    dialog.destroy()
+    if toexit:
+        Gtk.main_quit()
+
+def ResponseDialog(message):
+    dialog = Gtk.MessageDialog(
+        None, 0, Gtk.MessageType.QUESTION,
+        Gtk.ButtonsType.YES_NO,
+        message,
+    )
+
+    response = dialog.run()
+    dialog.destroy()
+
+    return response
+
 
 def UpdateAppPage(data):
     for app in data:
@@ -25,6 +51,7 @@ def UpdateAppPage(data):
 
 def BuildCategories(container):
     defaultCategories = {
+        'All': ['All'],
         'Accessories': ['Calendar', 'Viewer', 'Emulator', 'Utility', 'VideoConference', 'FileTransfer', 'FileTools', 'Archiving', 'TextEditor', 'Publishing', 'Presentation', 'Sequencer', 'RemoteAccess', 'OCR', 'Scanning', 'PackageManager', 'Application', 'Calculator', 'Dictionary', 'Maps', 'Clock', 'Chart', 'FileManager', 'Productivity', 'Spreadsheet'],
         'Education': ['Literature', 'LearnToCode', 'Documentation', 'Astronomy','Math', 'Robotics', 'Physics', 'Matrix', 'GUIDesigner', 'NumericalAnalysis', 'Chemistry', 'Geography', 'Geoscience'],
         'Development': ['Development','DataVisualization', 'IDE', 'WebDevelopment', 'RevisionControl', 'ProjectManagement', 'Publishing', 'Java', 'ContactManagment', 'Debugger', 'Profiling', 'GUIDesigner', 'Productivity'],
@@ -37,13 +64,18 @@ def BuildCategories(container):
     }
     for c in defaultCategories:
         btn = Gtk.Button.new_with_label(c)
-        btn.connect('clicked', UpdateCategories, defaultCategories[c])
+        context = btn.get_style_context()
+        context.add_class('category')
+        btn.connect('pressed', UpdateCategories, defaultCategories[c])
         container.add(btn)
 
 def UpdateCategories(widget, category):
     listStore.clear()
-    apps = bazaar.getAppsFromCategory(category)
-    UpdateAppPage(apps)
+    if 'All' in category:
+        UpdateAppPage(bazaar.appdata)
+    else:
+        apps = bazaar.getAppsFromCategory(category)
+        UpdateAppPage(apps)
 
 class Hander:
     def __init__(self):
@@ -80,15 +112,56 @@ class Hander:
         bazaarPage.set_visible_child_name('MainPage')
 
     def __updateAppPage(self, app, icon):
+        terminalBox.hide()
         appName_label.set_text(app['name'])
         appSum_label.set_text(app['summary'])
-        appDesc_label.set_text(app['description'])
-        appLogo_image.set_from_pixbuf(icon)
+        buffer = appDesc_label.get_buffer()
+        DescText = '%s\n\nLicense:%s\nDeveloper:%s\n' % (app['description'], app['license'], app['developer'])
+        for u in app['url']:
+            DescText += '\n%s:%s' % (u['type'], u['address'])
 
-        appInstall_button.connect('clicked', self.__install_app, app['name'])
+        buffer.set_text(DescText)
+        appLogo_image.set_from_pixbuf(icon)
+        if bazaar.isInstall(app):
+            appInstall_button.set_label('uninstall')
+            appInstall_button.connect('clicked', self.__uninstall_app, app)
+        else:
+            appInstall_button.connect('clicked', self.__install_app, app)
+
+    def __execute_cmd(self, cmd):
+        terminalBox.set_no_show_all(False)
+        terminalBox.show_all()
+        Terminal.spawn_sync(
+                Vte.PtyFlags.DEFAULT,
+                os.environ['HOME'],
+                cmd,
+                [],
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,
+                None
+            )
+
+
+    def __uninstall_app(self, widget, app):
+        print('uninstalling %s' % app['name'])
 
     def __install_app(self, widget, app):
-        print(bazaar.Install(app))
+        terminalBox.set_no_show_all(False)
+        terminalBox.show_all()
+        result = bazaar.getDepends(app)
+        if result == -1:
+            ErrorDialog('unable to find app "%s"' % app['name'])
+        elif result == -2:
+            ErrorDialog('unable to process app of unknown type')
+        else:
+            if len(result) > 1:
+                resp = ResponseDialog('%s are going to install' % (','.join(result)))
+                if resp == Gtk.ResponseType.NO:
+                    ErrorDialog('Ok Progress Exit')
+                    return
+            self.__execute_cmd(bazaar.getInstallCMD(app['name']))
+            
+
 
 
 bazaar = Bazaar()
@@ -105,8 +178,14 @@ appSum_label = builder.get_object('appSum_label')
 appDesc_label = builder.get_object('appDesc_label')
 appLogo_image = builder.get_object('appLogo_image')
 appInstall_button = builder.get_object('appInstall_button')
+appInfo_box = builder.get_object('AppInfoBox')
+terminalBox = builder.get_object('terminalBox')
+Terminal = Vte.Terminal()
+terminalBox.add(Terminal)
+terminalBox.set_no_show_all(True)
 
 categoryBox = builder.get_object('CategoryBox')
+categoryBox.show()
 
 builder.connect_signals(Hander())
 

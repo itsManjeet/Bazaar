@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import subprocess
 
 class FlatPak:
     def __init__(self, data_file):
@@ -13,12 +14,17 @@ class FlatPak:
         self.appdata = []
 
         for component in self.components:
+            plc = 'unknown'
+            try:
+                plc = component.find('project_license').text
+            except:
+                pass
             a = {
                 'name': component.find('name').text,
-                'id': component.find('id').text,
+                'id': component.find('id').text.replace('.desktop',''),
                 'summary': component.find('summary').text,
                 'description': self.__get_desc(component),
-                #'license': component.find('project_license').text,
+                'license': plc,
                 'developer': self.__get_developer_name(component),
                 'icons': self.__get_icons(component),
                 'categories': self.__get_categories(component),
@@ -31,6 +37,12 @@ class FlatPak:
             self.appdata.append(a)
 
         return self.appdata
+
+    def getApp(self, app):
+        for i in self.appdata:
+            if i['name'] == app:
+                return i
+        return None
 
     def __get_developer_name(self, component):
         try:
@@ -139,13 +151,41 @@ class FlatPak:
     
         return depends
 
-    def Install(self, app):
-        try:
-            appID = self.GenApp(app)['id']
-            return ['flatpak','install',appID, '-y']
-        
-        except AttributeError:
-            return None
+    def getInstallCMD(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
 
-        except KeyError:
-            return None
+        return ['/usr/bin/flatpak','install', app['id'], '-y']
+
+    def getDepends(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+        
+        return app['depends']
+
+    def isInstall(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+        
+        result = subprocess.run(['flatpak','list', '--columns=application'], stdout=subprocess.PIPE)
+        result = result.stdout.decode('utf-8')
+        for a in result.splitlines():
+            if a == app['id']:
+                return True
+        
+        return False
+
+    def install(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+        
+        result = subprocess.run(['flatpak','install', app['id'], '-y'])
+        return result.returncode
