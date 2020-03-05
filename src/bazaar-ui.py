@@ -2,7 +2,7 @@ import gi
 gi.require_version('Gtk','3.0')
 gi.require_version('Vte', '2.91')
 from gi.repository import Gtk, GdkPixbuf, Gdk, Vte, GLib
-from bazaar import Bazaar
+from backend.bazaar import Bazaar
 import threading
 import os
 
@@ -59,8 +59,9 @@ def BuildCategories(container):
         'Internet': ['Chat','Feed','InstantMessaging', 'Network', 'P2P', 'Email', 'VideoConference', 'Telephony', 'News', 'WebBrowser', 'IRCClient', 'HamRadio', 'Internet', 'Communication'],
         'Multimedia': ['Audio', 'AudioVideo', 'Music', 'Chat', 'Email', 'Player', 'Video', 'VideoConference', 'AudioVideoEditing', '2DGraphics', 'RasterGraphics', 'TV', 'Graphics', 'GTK', 'Photography', 'Qt', 'Recorder', '3DGraphics', 'Tuner', 'HamRadio', 'ImageProcessing', 'VectorGraphics', 'GUIDesigner', 'Art', 'Mixer'],
         'Office': ['Office', 'DataVisualization', 'Education', 'MedicalSoftware','Science', 'Electronics', 'Engineering', 'WordProcessor', 'VideoConference', 'Literature', 'ProjectManagement', 'Economy', 'Finance', 'Documentation', 'Presentation', 'Productivity', 'Spreadsheet'],
-        'System': ['System', 'Security', 'ConsoleOnly', 'Monitor', 'FileSystem', 'Languages', 'Translation'],
-        'Settings': ['HardwareSettings', 'DesktopSettings', ]
+        'System': ['System', 'Security', 'ConsoleOnly', 'Monitor', 'FileSystem', 'Languages', 'Translation', 'core', 'extra'],
+        'Settings': ['HardwareSettings', 'DesktopSettings', ],
+        'Xfce': ['xfce']
     }
     for c in defaultCategories:
         btn = Gtk.Button.new_with_label(c)
@@ -126,6 +127,7 @@ class Hander:
             appInstall_button.set_label('uninstall')
             appInstall_button.connect('clicked', self.__uninstall_app, app)
         else:
+            appInstall_button.set_label('install')
             appInstall_button.connect('clicked', self.__install_app, app)
 
     def __execute_cmd(self, cmd):
