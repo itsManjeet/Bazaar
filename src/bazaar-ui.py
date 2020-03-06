@@ -8,6 +8,19 @@ import os
 
 resourceFile = 'data/ui.glade'
 listStore = Gtk.ListStore(GdkPixbuf.Pixbuf, str)
+defaultCategories = {
+    'All': ['All'],
+    'Accessories': ['Calendar', 'Viewer', 'Emulator', 'Utility', 'VideoConference', 'FileTransfer', 'FileTools', 'Archiving', 'TextEditor', 'Publishing', 'Presentation', 'Sequencer', 'RemoteAccess', 'OCR', 'Scanning', 'PackageManager', 'Application', 'Calculator', 'Dictionary', 'Maps', 'Clock', 'Chart', 'FileManager', 'Productivity', 'Spreadsheet'],
+    'Education': ['Literature', 'LearnToCode', 'Documentation', 'Astronomy','Math', 'Robotics', 'Physics', 'Matrix', 'GUIDesigner', 'NumericalAnalysis', 'Chemistry', 'Geography', 'Geoscience'],
+    'Development': ['Development','DataVisualization', 'IDE', 'WebDevelopment', 'RevisionControl', 'ProjectManagement', 'Publishing', 'Java', 'ContactManagment', 'Debugger', 'Profiling', 'GUIDesigner', 'Productivity'],
+    'Games': ['Emulator', 'Games', 'ArcadeGame', 'RolePlaying', 'Shooter','Simulation', 'StrategyGame', 'ActionGame', 'AdventureGame', 'CardGame', 'LogicGame', 'BlocksGame', 'BoardGame', 'SportsGame', 'KidsGame', 'Adventure', 'Games', 'Role Playing'],
+    'Internet': ['Chat','Feed','InstantMessaging', 'Network', 'P2P', 'Email', 'VideoConference', 'Telephony', 'News', 'WebBrowser', 'IRCClient', 'HamRadio', 'Internet', 'Communication'],
+    'Multimedia': ['Audio', 'AudioVideo', 'Music', 'Chat', 'Email', 'Player', 'Video', 'VideoConference', 'AudioVideoEditing', '2DGraphics', 'RasterGraphics', 'TV', 'Graphics', 'GTK', 'Photography', 'Qt', 'Recorder', '3DGraphics', 'Tuner', 'HamRadio', 'ImageProcessing', 'VectorGraphics', 'GUIDesigner', 'Art', 'Mixer'],
+    'Office': ['Office', 'DataVisualization', 'Education', 'MedicalSoftware','Science', 'Electronics', 'Engineering', 'WordProcessor', 'VideoConference', 'Literature', 'ProjectManagement', 'Economy', 'Finance', 'Documentation', 'Presentation', 'Productivity', 'Spreadsheet'],
+    'System': ['System', 'Security', 'ConsoleOnly', 'Monitor', 'FileSystem', 'Languages', 'Translation', 'core', 'extra'],
+    'Settings': ['HardwareSettings', 'DesktopSettings', ],
+    'Xfce': ['xfce']
+}
 
 def ErrorDialog(errMessage, toexit = False):
     dialog = Gtk.MessageDialog(
@@ -50,27 +63,15 @@ def UpdateAppPage(data):
 
 
 def BuildCategories(container):
-    defaultCategories = {
-        'All': ['All'],
-        'Accessories': ['Calendar', 'Viewer', 'Emulator', 'Utility', 'VideoConference', 'FileTransfer', 'FileTools', 'Archiving', 'TextEditor', 'Publishing', 'Presentation', 'Sequencer', 'RemoteAccess', 'OCR', 'Scanning', 'PackageManager', 'Application', 'Calculator', 'Dictionary', 'Maps', 'Clock', 'Chart', 'FileManager', 'Productivity', 'Spreadsheet'],
-        'Education': ['Literature', 'LearnToCode', 'Documentation', 'Astronomy','Math', 'Robotics', 'Physics', 'Matrix', 'GUIDesigner', 'NumericalAnalysis', 'Chemistry', 'Geography', 'Geoscience'],
-        'Development': ['Development','DataVisualization', 'IDE', 'WebDevelopment', 'RevisionControl', 'ProjectManagement', 'Publishing', 'Java', 'ContactManagment', 'Debugger', 'Profiling', 'GUIDesigner', 'Productivity'],
-        'Games': ['Emulator', 'Games', 'ArcadeGame', 'RolePlaying', 'Shooter','Simulation', 'StrategyGame', 'ActionGame', 'AdventureGame', 'CardGame', 'LogicGame', 'BlocksGame', 'BoardGame', 'SportsGame', 'KidsGame', 'Adventure', 'Games', 'Role Playing'],
-        'Internet': ['Chat','Feed','InstantMessaging', 'Network', 'P2P', 'Email', 'VideoConference', 'Telephony', 'News', 'WebBrowser', 'IRCClient', 'HamRadio', 'Internet', 'Communication'],
-        'Multimedia': ['Audio', 'AudioVideo', 'Music', 'Chat', 'Email', 'Player', 'Video', 'VideoConference', 'AudioVideoEditing', '2DGraphics', 'RasterGraphics', 'TV', 'Graphics', 'GTK', 'Photography', 'Qt', 'Recorder', '3DGraphics', 'Tuner', 'HamRadio', 'ImageProcessing', 'VectorGraphics', 'GUIDesigner', 'Art', 'Mixer'],
-        'Office': ['Office', 'DataVisualization', 'Education', 'MedicalSoftware','Science', 'Electronics', 'Engineering', 'WordProcessor', 'VideoConference', 'Literature', 'ProjectManagement', 'Economy', 'Finance', 'Documentation', 'Presentation', 'Productivity', 'Spreadsheet'],
-        'System': ['System', 'Security', 'ConsoleOnly', 'Monitor', 'FileSystem', 'Languages', 'Translation', 'core', 'extra'],
-        'Settings': ['HardwareSettings', 'DesktopSettings', ],
-        'Xfce': ['xfce']
-    }
     for c in defaultCategories:
-        btn = Gtk.Button.new_with_label(c)
-        context = btn.get_style_context()
-        context.add_class('category')
-        btn.connect('pressed', UpdateCategories, defaultCategories[c])
-        container.add(btn)
+        lbl = Gtk.Label(c)
+        lbl.set_margin_start(55)
+        lbl.set_margin_end(55)
+        lbl.set_margin_top(10)
+        lbl.set_margin_bottom(10)
+        container.add(lbl)
 
-def UpdateCategories(widget, category):
+def UpdateCategories(category):
     listStore.clear()
     if 'All' in category:
         UpdateAppPage(bazaar.appdata)
@@ -84,6 +85,10 @@ class Hander:
 
     def OnMainDestroy(self, *args):
         Gtk.main_quit()
+
+    def categorySelected(self, listBox, listBoxRow):
+        selectedCategory = listBoxRow.get_child().get_text()
+        UpdateCategories(defaultCategories[selectedCategory])
 
     def SelectionChanged(self, iconView):
         selected = iconView.get_selected_items()
@@ -118,6 +123,7 @@ class Hander:
         appSum_label.set_text(app['summary'])
         buffer = appDesc_label.get_buffer()
         DescText = '%s\n\nLicense:%s\nDeveloper:%s\n' % (app['description'], app['license'], app['developer'])
+        DescText += "Provided by: %s\n" % app['type']
         for u in app['url']:
             DescText += '\n%s:%s' % (u['type'], u['address'])
 
@@ -145,7 +151,10 @@ class Hander:
 
 
     def __uninstall_app(self, widget, app):
-        print('uninstalling %s' % app['name'])
+        resp = ResponseDialog('%s are going to uninstall' % (app['name']))
+        if resp == Gtk.ResponseType.NO:
+            return
+        self.__execute_cmd(bazaar.getUnInstallCMD(app))
 
     def __install_app(self, widget, app):
         terminalBox.set_no_show_all(False)
@@ -161,7 +170,7 @@ class Hander:
                 if resp == Gtk.ResponseType.NO:
                     ErrorDialog('Ok Progress Exit')
                     return
-            self.__execute_cmd(bazaar.getInstallCMD(app['name']))
+            self.__execute_cmd(bazaar.getInstallCMD(app))
             
 
 

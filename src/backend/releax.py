@@ -104,6 +104,14 @@ class Releax:
 
         return ['/usr/bin/app','in', app['name'], '--no-ask']
 
+    def getUnInstallCMD(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        return ['/usr/bin/app','rm', app['name'], '--no-ask']
+
     def isInstall(self, app):
         if type(app) == str:
             app = self.getApp(app)

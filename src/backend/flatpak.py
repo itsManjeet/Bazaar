@@ -158,6 +158,14 @@ class FlatPak:
                 return -1
 
         return ['/usr/bin/flatpak','install', app['id'], '-y']
+    
+    def getUnInstallCMD(self, app):
+        if type(app) == str:
+            app = self.getApp(app)
+            if app is None:
+                return -1
+
+        return ['/usr/bin/flatpak','uninstall', app['id'], '-y']
 
     def getDepends(self, app):
         if type(app) == str:

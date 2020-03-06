@@ -40,51 +40,28 @@ class Bazaar:
         return apps
 
     def getDepends(self, app):
-        if type(app) == str:
-            app = self.getApp(app)
-            if app is None:
-                return -1
-
-        if app['type'] == 'releax':
-            return self.releax.getDepends(app)
-        elif app['type'] == 'flatpak':
-            return self.flatpak.getDepends(app)
-        else:
-            return -3
+        return self.__execute_cmd('getDepends', app)
 
     def getInstallCMD(self, app):
-        if type(app) == str:
-            app = self.getApp(app)
-            if app is None:
-                return -1
+        return self.__execute_cmd('getInstallCMD', app)
 
-        if app['type'] == 'releax':
-            return self.releax.getInstallCMD(app)
-        elif app['type'] == 'flatpak':
-            return self.flatpak.getInstallCMD(app)
-        else:
-            return ['/usr/bin/sh','echo','"dont know how to install %s"' % app['id']]
+    def getUnInstallCMD(self, app):
+        return self.__execute_cmd('getUnInstallCMD', app)
 
     def isInstall(self, app):
-        if type(app) == str:
-            app = self.getApp(app)
-            if app is None:
-                return False
-
-        if app['type'] == 'releax':
-            return self.releax.isInstall(app)
-        elif app['type'] == 'flatpak':
-            return self.flatpak.isInstall(app)
-        else:
-            return False
+        return self.__execute_cmd('isInstall', app)
 
     def install(self, app):
-        if type(app) == str:
-            app = self.getApp(app)
-            if app is None:
-                return -1
+        return self.__execute_cmd('install', app)
 
-        if app['type'] == 'releax':
-            return self.releax.install(app)
+    def __execute_cmd(self, funcName, appData):
+        if type(appData) == str:
+            appData = self.getApp(appData)
+            if appData is None:
+                return -1
+        if appData['type'] == 'releax':
+            return getattr(self.releax, funcName)(appData)
+        elif appData['type'] == 'flatpak':
+            return getattr(self.flatpak, funcName)(appData)
         else:
-            print('not yet implemented')
+            return False
