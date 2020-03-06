@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=Bazaar
+Comment=Application Market
+GenericName=AppMarket
+Exec=bazaar-ui.py %f
+Icon=gnome-software
+Terminal=false
+Categories=GTK;Accessories;System
+StartupNotify=true
+Type=Application
