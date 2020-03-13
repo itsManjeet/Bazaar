@@ -7,7 +7,7 @@ from backend.bazaar import Bazaar
 import threading
 import os
 
-resourceFile = 'data/ui.glade'
+resourceFile = '/usr/share/bazaar/ui.glade'
 listStore = Gtk.ListStore(GdkPixbuf.Pixbuf, str)
 defaultCategories = {
     'All': ['All'],
@@ -130,6 +130,12 @@ class Hander:
 
         buffer.set_text(DescText)
         appLogo_image.set_from_pixbuf(icon)
+        try:
+            appInstall_button.disconnect_by_func(self.__uninstall_app)
+            appInstall_button.disconnect_by_func(self.__install_app)
+        except TypeError:
+            pass
+
         if bazaar.isInstall(app):
             appInstall_button.set_label('uninstall')
             appInstall_button.connect('clicked', self.__uninstall_app, app)
