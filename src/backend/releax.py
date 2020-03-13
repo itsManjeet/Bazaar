@@ -88,7 +88,7 @@ class Releax:
             if app is None:
                 return -1
 
-        result = subprocess.run(['app','dp', app['name']], stdout=subprocess.PIPE)
+        result = subprocess.run(['sys-app','dp', app['name']], stdout=subprocess.PIPE)
         deps = result.stdout.decode('utf-8').splitlines()
         a = []
         for i in deps:
@@ -102,7 +102,7 @@ class Releax:
             if app is None:
                 return -1
 
-        return ['/usr/bin/app','in', app['name'], '--no-ask']
+        return ['/bin/pkexec','/bin/sys-app','in', app['name'], '--no-ask']
 
     def getUnInstallCMD(self, app):
         if type(app) == str:
@@ -110,7 +110,7 @@ class Releax:
             if app is None:
                 return -1
 
-        return ['/usr/bin/app','rm', app['name'], '--no-ask']
+        return ['/bin/pkexec','/bin/sys-app','rm', app['name'], '--no-ask']
 
     def isInstall(self, app):
         if type(app) == str:
@@ -132,7 +132,7 @@ class Releax:
             if app is None:
                 return -1
         
-        result = subprocess.run(['app','in', app['name'], '--no-ask'])
+        result = subprocess.run(['/bin/pkexec','/bin/sys-app','in', app['name'], '--no-ask'])
         return result.returncode
 
 
