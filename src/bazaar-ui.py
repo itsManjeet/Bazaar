@@ -6,6 +6,8 @@ from gi.repository import Gtk, GdkPixbuf, Gdk, Vte, GLib
 from backend.bazaar import Bazaar
 import threading
 import os
+import time
+import subprocess
 
 resourceFile = '/usr/share/bazaar/ui.glade'
 listStore = Gtk.ListStore(GdkPixbuf.Pixbuf, str)
@@ -46,6 +48,28 @@ def ResponseDialog(message):
     dialog.destroy()
 
     return response
+
+def ProgressDialog(message ,function, *data):
+    win = Gtk.Window()
+    
+    progress = Gtk.ProgressBar(show_text = True)
+    win.add(progress)
+
+    def update_progress():
+        progress.pulse()
+        progress.set_text(str(message))
+        return False
+
+    def target():
+        GLib.idle_add(update_progress)
+        function(data)
+        win.destroy()
+    
+    win.show_all()
+
+    thread = threading.Thread(target=target)
+    thread.daemon = True
+    thread.start()
 
 
 def UpdateAppPage(data):
@@ -115,6 +139,10 @@ class Hander:
         UpdateAppPage(data)
 
     
+    def refresh_button_clicked(self, *args):
+        def ref(*args):
+            subprocess.run(['/bin/sh','src/bazar-genrepo.sh'], stdout=subprocess.PIPE)
+        ProgressDialog('Updating repo', ref, "hello world")
     def BackButtonClicked(self, *args):
         bazaarPage.set_visible_child_name('MainPage')
 
