@@ -1,9 +1,8 @@
 [Desktop Entry]
-Version=1.0
 Name=Bazaar
-Comment=Application Market
+Icon=Application Market
 GenericName=AppMarket
-Exec=bazaar-ui %f
+Exec=bazaar %f
 Icon=gnome-software
 Terminal=false
 Categories=GTK;Accessories;System
