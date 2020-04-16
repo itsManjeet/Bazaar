@@ -132,7 +132,10 @@ class Bazaar:
         self._getWidget('appDescLbl').set_text(app_data['detail'])
         self._getWidget('stackPage').set_visible_child_name('appInfo')
         try:
-            pixbuf = Gtk.IconTheme.get_default().load_icon(app_name, 64, 0)
+            if app_name == 'xkbcomp':
+                pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 64, 0)
+            else:
+                pixbuf = Gtk.IconTheme.get_default().load_icon(app_name, 64, 0)
         except:
             pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 64, 0)
             
@@ -167,8 +170,13 @@ class Bazaar:
             recipieBuffer.set_text(data, len(data))
 
         self._getWidget('licenseLbl').set_text(app_data['license'])
-        self._getWidget('urlLbl').set_markup('<a href="">%s</a>' % app_data['home url'])
-        self._getWidget('urlLbl').connect('activate-link', self.onLoadUrl, app_data['home url'])
+        self._getWidget('urlLbl').set_markup('<a href="">%s</a>' % app_data['url'])
+        try:
+        	self._getWidget('urlLbl').disconnect_by_func(self.onLoadUrl)
+        except:
+        	pass
+        	
+        self._getWidget('urlLbl').connect('activate-link', self.onLoadUrl, app_data['url'])
         is_visible = False
         if app_data['status'] == 'installed':
             is_visible  = True
@@ -206,7 +214,7 @@ class Bazaar:
 
     def _sysExecFunc(self, method , appname):
         self._getWidget('clickButton').set_label('%sing....' % method)
-        subprocess = Gio.Subprocess.new(['pkexec', 'sys-app', method, appname],0)
+        subprocess = Gio.Subprocess.new(['pkexec', 'sys-app', method, appname, '--no-ask'],0)
         subprocess.wait_check_async(None, self._postExecFunc)
 
     def _postExecFunc(self, subprocess, result):

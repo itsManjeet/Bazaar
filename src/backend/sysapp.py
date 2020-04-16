@@ -46,4 +46,3 @@ class SysApp:
 
 
         return app_data
-
