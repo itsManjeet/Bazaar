@@ -19,12 +19,19 @@ class SysApp:
                     continue
                 icon = None
                 icon_path = os.path.join(self._repo_dir,repo,app,'icon')
+                category = []
+                with open(os.path.join(self._repo_dir,repo, app, 'recipie')) as fptr:
+                    for l in fptr.readlines():
+                        if l.startswith('#') and 'Category' in l:
+                            category = l.split(':')[1].strip().split()
+
                 if os.path.exists(icon_path):
                     icon = icon_path
                 self._appdata.append(
                     {
                         'name': app,
-                        'category': repo,
+                        'category': category,
+                        'repo': repo,
                         'icon': icon,
                         'type': 'releax'
                     }
@@ -42,7 +49,7 @@ class SysApp:
 
         for i in self._appdata:
             if i['name'] == app_name:
-                app_data['repo'] = i['category']
+                app_data['repo'] = i['repo']
 
 
         return app_data

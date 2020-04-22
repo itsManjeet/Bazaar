@@ -9,6 +9,10 @@ import threading
 import subprocess
 
 
+categories = [
+    'All', 'Accessories', 'Development', 'Graphics', 'Internet', 'Games', 'Multimedia', 'Office', 'Customizations', 'Plugins', 'System', 'Libraries'
+]
+
 class errorDialog(Gtk.Dialog):
 
     def __init__(self, parent, msg_text):
@@ -57,9 +61,9 @@ class Bazaar:
 
 
         threading.Thread(target=self._load_apps, args=[self._sysapp.getCache(),]).start()
-        for c in os.listdir(self._sysapp._repo_dir):
+        for c in categories:
             label = Gtk.Label(c)
-            label.set_padding(30, 15);
+            label.set_padding(40, 15);
             self._getWidget('categoryListBox').add(label)
 
 
@@ -80,9 +84,6 @@ class Bazaar:
             self._icon_list_store.append([pixbuf, a['name']])
 
         
- 
-        
-
     def run(self):
         self._window.show_all()
         Gtk.main()
@@ -110,11 +111,11 @@ class Bazaar:
     def onCategoryClick(self, listbox, listboxrow):
         category = listboxrow.get_child().get_text()
         app_data = []
-        if category == 'all':
+        if category == 'All':
             self._load_apps(self._sysapp._appdata)
         else:
             for i in self._sysapp._appdata:
-                if category == i['category']:
+                if category in i['category']:
                     app_data.append(i)
 
             self._load_apps(app_data)
@@ -178,11 +179,23 @@ class Bazaar:
         	
         self._getWidget('urlLbl').connect('activate-link', self.onLoadUrl, app_data['url'])
         is_visible = False
+
+        ErrText = '<span foreground="red"><b>😱 Error</b></span>'
+        OkText = '<span foreground="green"><b>✔️ ok</b></span>'
+
         if app_data['status'] == 'installed':
             is_visible  = True
-            self._getWidget('depLbl').set_text(app_data['dependencies'])
-            self._getWidget('installOnLbl').set_text('installed on')
-            self._getWidget('integLbl').set_text('integrity')
+            if app_data['dependencies'] == 'satisfied':
+                self._getWidget('depLbl').set_markup(OkText)
+            else:
+                self._getWidget('depLbl').set_markup(ErrText)
+
+            if app_data['integrity'] == 'ok':
+                self._getWidget('integLbl').set_markup(OkText)
+            else:
+                self._getWidget('integLbl').set_markup(ErrText)
+
+            self._getWidget('installOnLbl').set_text(app_data['installed on'])
         else:
             is_visible  = False
 
