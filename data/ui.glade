@@ -6,7 +6,7 @@
   <object class="GtkTextBuffer" id="textbuffer1"/>
   <object class="GtkWindow" id="mainWindow">
     <property name="can_focus">False</property>
-    <property name="default_width">1200</property>
+    <property name="default_width">1250</property>
     <property name="default_height">800</property>
     <signal name="destroy" handler="onDestroy" swapped="no"/>
     <child type="titlebar">
@@ -114,13 +114,18 @@
                 <property name="spacing">10</property>
                 <child>
                   <object class="GtkButton" id="backBtn">
-                    <property name="label">gtk-go-back</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="halign">start</property>
-                    <property name="use_stock">True</property>
                     <signal name="clicked" handler="onBackBtnClick" swapped="no"/>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="stock">gtk-go-back</property>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
