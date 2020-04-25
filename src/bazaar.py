@@ -7,6 +7,7 @@ from backend import sysapp
 import os
 import threading
 import subprocess
+from dbus import SystemBus, Interface
 
 
 categories = [
@@ -33,18 +34,21 @@ class Bazaar:
     def __init__(self, ui_file):
         self._ui_file = ui_file
         self._icon_list_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str)
-        self._sysapp = sysapp.SysApp('/etc/sysconfig/app.conf')
+        self.sysapp = sysapp.SysApp('/etc/sysconfig/app.conf')
 
     def load(self):
         self._builder = Gtk.Builder()
         self._builder.add_from_file(self._ui_file)
         self._builder.connect_signals(self)
-        self._window = self._getWidget('mainWindow')
+        self._window = self.getWidget('mainWindow')
 
         self._screen = Gdk.Screen.get_default()
         self._provider = Gtk.CssProvider()
 
         css = b"""
+        #ScreenShotImage {
+            box-shadow: 2px 2px 2px grey, 0 0 2px black
+        }
         """
 
         self._provider.load_from_data(css)
@@ -54,17 +58,16 @@ class Bazaar:
             self._provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
-        self._getWidget('iconView').set_model(self._icon_list_store)
-        self._getWidget('iconView').set_pixbuf_column(0)
-        self._getWidget('iconView').set_text_column(1)
+        self.getWidget('iconView').set_model(self._icon_list_store)
+        self.getWidget('iconView').set_pixbuf_column(0)
+        self.getWidget('iconView').set_text_column(1)
 
 
-
-        threading.Thread(target=self._load_apps, args=[self._sysapp.getCache(),]).start()
+        threading.Thread(target=self._load_apps, args=[self.sysapp.getCache(),]).start()
         for c in categories:
             label = Gtk.Label(c)
             label.set_padding(40, 15);
-            self._getWidget('categoryListBox').add(label)
+            self.getWidget('categoryListBox').add(label)
 
 
     def _load_apps(self, app_data):     
@@ -97,7 +100,7 @@ class Bazaar:
         dialog.destroy()
         Gtk.main_quit()
 
-    def _getWidget(self, widget_name):
+    def getWidget(self, widget_name):
         widget = self._builder.get_object(widget_name)
         if widget == None:
             self._errorDialog('Unable to get widget %s' % widget_name)
@@ -112,9 +115,9 @@ class Bazaar:
         category = listboxrow.get_child().get_text()
         app_data = []
         if category == 'All':
-            self._load_apps(self._sysapp._appdata)
+            self._load_apps(self.sysapp._appdata)
         else:
-            for i in self._sysapp._appdata:
+            for i in self.sysapp._appdata:
                 if category in i['category']:
                     app_data.append(i)
 
@@ -123,15 +126,15 @@ class Bazaar:
     def onAppSelected(self, *args):
         item = args[0].get_selected_items()[0][0]
         app_name = self._icon_list_store[item][1]
-        self._loadAppPage(app_name)
+        self.loadAppPage(app_name)
     
-    def _loadAppPage(self, app_name):
+    def loadAppPage(self, app_name):
         print("getting app %s" % app_name)
-        app_data = self._sysapp.getApp(app_name)
+        app_data = self.sysapp.getApp(app_name)
 
-        self._getWidget('appNameLbl').set_text('%s %s' % (app_data['name'], app_data['version']))
-        self._getWidget('appDescLbl').set_text(app_data['detail'])
-        self._getWidget('stackPage').set_visible_child_name('appInfo')
+        self.getWidget('appNameLbl').set_text('%s %s' % (app_data['name'], app_data['version']))
+        self.getWidget('appDescLbl').set_text(app_data['detail'])
+        self.getWidget('stackPage').set_visible_child_name('appInfo')
         try:
             if app_name == 'xkbcomp':
                 pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 64, 0)
@@ -140,9 +143,9 @@ class Bazaar:
         except:
             pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 64, 0)
             
-        self._getWidget('appImage').set_from_pixbuf(pixbuf)
-        self._clearClickButton()
-        clickbtn = self._getWidget('clickButton')
+        self.getWidget('appImage').set_from_pixbuf(pixbuf)
+        self.clearClickButton()
+        clickbtn = self.getWidget('clickButton')
         if app_data['status'] == 'installed':
             clickbtn.set_label('uninstall')
             clickbtn.connect('clicked',self.onUninstallBtnClick, app_name)
@@ -154,30 +157,30 @@ class Bazaar:
         try:
             with open('/var/lib/app/%s/files' % app_name) as fptr:
                 data = fptr.read()
-                self._getWidget('textbuffer1').set_text(data, len(data))
+                self.getWidget('textbuffer1').set_text(data, len(data))
 
         except FileNotFoundError:
-            start = self._getWidget('textbuffer1').get_start_iter()
-            end = self._getWidget('textbuffer1').get_end_iter()
-            self._getWidget('textbuffer1').delete(start, end)
+            start = self.getWidget('textbuffer1').get_start_iter()
+            end = self.getWidget('textbuffer1').get_end_iter()
+            self.getWidget('textbuffer1').delete(start, end)
 
         
-        recipieBuffer = self._getWidget('recipieBuffer')
-        with open('/%s/%s/%s/recipie' % (self._sysapp._repo_dir, app_data['repo'], app_name)) as fptr:
+        recipieBuffer = self.getWidget('recipieBuffer')
+        with open('/%s/%s/%s/recipie' % (self.sysapp._repo_dir, app_data['repo'], app_name)) as fptr:
             start = recipieBuffer.get_start_iter()
             end = recipieBuffer.get_end_iter()
             recipieBuffer.delete(start, end)
             data = fptr.read()
             recipieBuffer.set_text(data, len(data))
 
-        self._getWidget('licenseLbl').set_text(app_data['license'])
-        self._getWidget('urlLbl').set_markup('<a href="">%s</a>' % app_data['url'])
+        self.getWidget('licenseLbl').set_text(app_data['license'])
+        self.getWidget('urlLbl').set_markup('<a href="">%s</a>' % app_data['url'])
         try:
-        	self._getWidget('urlLbl').disconnect_by_func(self.onLoadUrl)
+        	self.getWidget('urlLbl').disconnect_by_func(self.onLoadUrl)
         except:
         	pass
         	
-        self._getWidget('urlLbl').connect('activate-link', self.onLoadUrl, app_data['url'])
+        self.getWidget('urlLbl').connect('activate-link', self.onLoadUrl, app_data['url'])
         is_visible = False
 
         ErrText = '<span foreground="red"><b>😱 Error</b></span>'
@@ -186,25 +189,40 @@ class Bazaar:
         if app_data['status'] == 'installed':
             is_visible  = True
             if app_data['dependencies'] == 'satisfied':
-                self._getWidget('depLbl').set_markup(OkText)
+                self.getWidget('depLbl').set_markup(OkText)
             else:
-                self._getWidget('depLbl').set_markup(ErrText)
+                self.getWidget('depLbl').set_markup(ErrText)
 
             if app_data['integrity'] == 'ok':
-                self._getWidget('integLbl').set_markup(OkText)
+                self.getWidget('integLbl').set_markup(OkText)
             else:
-                self._getWidget('integLbl').set_markup(ErrText)
+                self.getWidget('integLbl').set_markup(ErrText)
 
-            self._getWidget('installOnLbl').set_text(app_data['installed on'])
+            self.getWidget('installOnLbl').set_text(app_data['installed on'])
         else:
             is_visible  = False
 
-        self._getWidget('depLbl').set_visible(is_visible)
-        self._getWidget('installOnLbl').set_visible(is_visible)
-        self._getWidget('integLbl').set_visible(is_visible)
+        self.getWidget('depLbl').set_visible(is_visible)
+        self.getWidget('installOnLbl').set_visible(is_visible)
+        self.getWidget('integLbl').set_visible(is_visible)
 
-    def _clearClickButton(self):
-        btn = self._getWidget('clickButton')
+        sc = self.getWidget('screenShotBox')
+        scfile = '/%s/%s/%s/screenshot' % (self.sysapp._repo_dir, app_data['repo'], app_name)
+        if os.path.exists(scfile):
+            print('adding image from',scfile)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                filename = scfile,
+                width = 500,
+                height = 500,
+                preserve_aspect_ratio = True
+            )
+            img = Gtk.Image.new_from_pixbuf(pixbuf)
+            img.set_name('ScreenShotImage')
+            img.show()
+            sc.add(img)
+
+    def clearClickButton(self):
+        btn = self.getWidget('clickButton')
         try:
             btn.disconnect_by_func(self.onInstallBtnClick)
         except TypeError:
@@ -222,56 +240,69 @@ class Bazaar:
     def onInstallBtnClick(self, btn, appname):
         btn.set_sensitive(False)
         self.__cur_app = appname
-        self._getWidget('backBtn').set_sensitive(False)
-        self._sysExecFunc("install",appname)
+        self.getWidget('backBtn').set_sensitive(False)
+        self.__exec_func__("install",appname)
 
-    def _sysExecFunc(self, method , appname):
-        self._getWidget('clickButton').set_label('%sing....' % method)
-        subprocess = Gio.Subprocess.new(['pkexec', 'sys-app', method, appname, '--no-ask'],0)
-        subprocess.wait_check_async(None, self._postExecFunc)
+    def __exec_func__(self, method , appname):
+        self.getWidget('clickButton').set_label('%sing....' % method)
+        self.process = subprocess.Popen(['pkexec', 'sys-app', method, appname, '--no-ask'],0, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        thread = threading.Thread(target=self.__update_progress__)
+        thread.start()
+    
+    def __update_progress__(self):
+        print('update progress')
+        while True:
+            print('update progress')
+            output = self.process.stdout.readline().decode('utf-8')
+            print(output)
+            if output == '' and self.process.poll() != None:
+                self.__post_exec_func__()
+                break
+            if output != '':
+                self.getWidget('clickButton').set_label(output)
 
-    def _postExecFunc(self, subprocess, result):
-        subprocess.wait_check_finish(result)
-        self._getWidget('backBtn').set_sensitive(True)
-        self._clearClickButton()
-        self._loadAppPage(self.__cur_app)
-        self._getWidget('clickButton').set_sensitive(True)
+
+    def __post_exec_func__(self):
+        self.getWidget('backBtn').set_sensitive(True)
+        self.clearClickButton()
+        self.loadAppPage(self.__cur_app)
+        self.getWidget('clickButton').set_sensitive(True)
 
     def onUninstallBtnClick(self, btn, appname):
         btn.set_sensitive(False)
         self.__cur_app = appname
-        self._getWidget('backBtn').set_sensitive(False)
-        self._sysExecFunc("remove",appname)
+        self.getWidget('backBtn').set_sensitive(False)
+        self.__exec_func__("remove",appname)
         
 
     def onBackBtnClick(self, *args):
-        self._getWidget('stackPage').set_visible_child_name('marketPage')
+        self.getWidget('stackPage').set_visible_child_name('marketPage')
 
     def onSearchChanged(self, searchbox):
         search_text = searchbox.get_text()
         app_data = []
-        for i in self._sysapp._appdata:
+        for i in self.sysapp._appdata:
             if search_text in i['name']:
                 app_data.append(i)
 
         self._load_apps(app_data)
 
     def _exec_process_refresh(self):
-        self._getWidget('refreshBtn').set_label('refreshing....')
+        self.getWidget('refreshBtn').set_label('refreshing....')
         subprocess = Gio.Subprocess.new(['pkexec', 'sys-app', 'refresh'],0)
         subprocess.wait_check_async(None, self._postRefreshProcess)
 
     def _postRefreshProcess(self, subprocess, result):
         subprocess.wait_check_finish(result)
-        self._getWidget('refreshBtn').set_sensitive(True)
-        self._clearClickButton()
-        self._getWidget('refreshBtn').set_label('refresh')
-        self._sysapp.getCache()
+        self.getWidget('refreshBtn').set_sensitive(True)
+        self.clearClickButton()
+        self.getWidget('refreshBtn').set_label('refresh')
+        self.sysapp.getCache()
 
-        self._load_apps(self._sysapp._appdata)
+        self._load_apps(self.sysapp._appdata)
 
     def onRefreshClick(self, *args):
-        self._getWidget('refreshBtn').set_sensitive(False)
+        self.getWidget('refreshBtn').set_sensitive(False)
         self._exec_process_refresh()
 
 
