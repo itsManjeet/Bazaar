@@ -4,7 +4,7 @@
 ## Backends
   /src/backend/ provide functionality for bazaar to install, update, uninstall packages
   - releax : backend for native package manager
-  - flatpak: backend for flatpak package manager
+  - ~~flatpak: backend for flatpak package manager~~ (disabled)
 
 
 ## ScreenShots
