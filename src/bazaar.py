@@ -1,7 +1,8 @@
 #!/bin/python
 import gi
 gi.require_version('Gtk','3.0')
-from gi.repository import Gtk, GLib, Gdk, GdkPixbuf, Gio
+gi.require_version('Vte','2.91')
+from gi.repository import Gtk, GLib, Gdk, GdkPixbuf, Gio, Vte
 from time import sleep
 from backend import sysapp
 import os
@@ -69,6 +70,24 @@ class Bazaar:
             label.set_padding(40, 15);
             self.getWidget('categoryListBox').add(label)
 
+        self.terminal = Vte.Terminal()
+        self.getWidget('terminalBox').add(self.terminal)
+        self.terminal.set_scrollback_lines(1000)
+        self.vte_pty = self.terminal.pty_new_sync(Vte.PtyFlags.DEFAULT)
+        self.terminal.set_colors(
+            Gdk.RGBA(0.0, 0.0, 0.0, 1.0),
+            Gdk.RGBA(1.0, 1.0, 1.0, 1.0),
+            None
+        )
+        self.terminal.set_pty(self.vte_pty)
+        self.terminal.set_audible_bell(False)
+        self.terminal.connect('child-exited', self.__terminal_finished__)
+        self.terminal.show()
+
+    def __terminal_finished__(self, *args):
+       self.__post_exec_func__()
+       self.vte_pty = self.terminal.pty_new_sync(Vte.PtyFlags.DEFAULT)
+       self.terminal.set_pty(self.vte_pty)
 
     def _load_apps(self, app_data):     
         self._icon_list_store.clear()
@@ -133,7 +152,7 @@ class Bazaar:
         self.loadAppPage(app_name)
     
     def loadAppPage(self, app_name):
-        print("getting app %s" % app_name)
+        #print("getting app %s" % app_name)
         app_data = self.sysapp.getApp(app_name)
 
         self.getWidget('appNameLbl').set_text('%s %s' % (app_data['name'], app_data['version']))
@@ -218,7 +237,7 @@ class Bazaar:
         sc = self.getWidget('screenShotBox')
         scfile = '/%s/%s/%s/screenshot' % (self.sysapp._repo_dir, app_data['repo'], app_name)
         if os.path.exists(scfile):
-            print('adding image from',scfile)
+            #print('adding image from',scfile)
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
                 filename = scfile,
                 width = 500,
@@ -254,23 +273,20 @@ class Bazaar:
 
     def __exec_func__(self, method , appname):
         self.getWidget('clickButton').set_label('%sing....' % method)
-        self.process = subprocess.Popen(['pkexec', 'sys-app', method, appname, '--no-ask'],0, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        thread = threading.Thread(target=self.__update_progress__)
-        thread.start()
+        self.child_pid, _, _, _ = GLib.spawn_async(
+            working_directory = os.getcwd(),
+            argv = ['/bin/pkexec','sys-app',method, appname, '--no-ask'],
+            flags = (GLib.SpawnFlags.DO_NOT_REAP_CHILD),
+            child_setup = self._child_setup,
+            user_data = self.vte_pty
+        )
+
+        self.terminal.watch_child(self.child_pid)
+        #GLib.spawn_close_pid(self.child_pid)
+
+    def _child_setup(self, vte_pty):
+        vte_pty.child_setup()
     
-    def __update_progress__(self):
-        print('update progress')
-        while True:
-            print('update progress')
-            output = self.process.stdout.readline().decode('utf-8')
-            print(output)
-            if output == '' and self.process.poll() != None:
-                self.__post_exec_func__()
-                break
-            if output != '':
-                self.getWidget('clickButton').set_label(output)
-
-
     def __post_exec_func__(self):
         self.getWidget('backBtn').set_sensitive(True)
         self.clearClickButton()
