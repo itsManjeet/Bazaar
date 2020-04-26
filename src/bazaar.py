@@ -76,7 +76,11 @@ class Bazaar:
         for a in app_data:
             pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 64, 0)
             if a['icon'] is not None:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(a['icon'])
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                    filename = a['icon'],
+                    height = 64,
+                    width = 64,
+                    preserve_aspect_ratio = True)
 
             try:
                 pixbuf = Gtk.IconTheme.get_default().load_icon(a['name'], 64, 0)
@@ -135,13 +139,18 @@ class Bazaar:
         self.getWidget('appNameLbl').set_text('%s %s' % (app_data['name'], app_data['version']))
         self.getWidget('appDescLbl').set_text(app_data['detail'])
         self.getWidget('stackPage').set_visible_child_name('appInfo')
+        pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 128, 0)
+        if app_data['icon'] is not None:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                filename = app_data['icon'],
+                height = 128,
+                width = 128,
+                preserve_aspect_ratio = True)
+
         try:
-            if app_name == 'xkbcomp':
-                pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 64, 0)
-            else:
-                pixbuf = Gtk.IconTheme.get_default().load_icon(app_name, 64, 0)
-        except:
-            pixbuf = Gtk.IconTheme.get_default().load_icon('application-x-pak', 64, 0)
+            pixbuf = Gtk.IconTheme.get_default().load_icon(app_data['name'], 128, 0)
+        except Exception as e:
+            pass
             
         self.getWidget('appImage').set_from_pixbuf(pixbuf)
         self.clearClickButton()

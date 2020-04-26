@@ -50,6 +50,7 @@ class SysApp:
         for i in self._appdata:
             if i['name'] == app_name:
                 app_data['repo'] = i['repo']
+                app_data['icon'] = i['icon']
 
 
         return app_data
