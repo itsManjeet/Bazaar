@@ -79,6 +79,10 @@ class Bazaar:
             Gdk.RGBA(1.0, 1.0, 1.0, 1.0),
             None
         )
+        self.terminal.set_cursor_blink_mode(Vte.CursorBlinkMode.OFF)
+        self.terminal.set_color_cursor(
+            Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
+        )
         self.terminal.set_pty(self.vte_pty)
         self.terminal.set_audible_bell(False)
         self.terminal.connect('child-exited', self.__terminal_finished__)
