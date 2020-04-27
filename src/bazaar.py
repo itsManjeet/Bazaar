@@ -283,7 +283,6 @@ class Bazaar:
             self.__set_text_buffer__('recipie_buffer', data)
     
 
-        sc = self.get_widget('screen_shot_box')
         scfile = '/%s/%s/%s/screenshot' % (self.sysapp.repodir, app_data['repo'], app_name)
         if os.path.exists(scfile):
             #print('adding image from',scfile)
@@ -293,10 +292,7 @@ class Bazaar:
                 height = 500,
                 preserve_aspect_ratio = True
             )
-            img = Gtk.Image.new_from_pixbuf(pixbuf)
-            img.set_name('ScreenShotImage')
-            img.show()
-            sc.add(img)        
+            self.get_widget('screenshot_image').set_from_pixbuf(pixbuf)    
 
 
     def on_install_click(self, btn, appdata):
