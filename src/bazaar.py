@@ -8,7 +8,6 @@ from backend import sysapp
 import os
 import threading
 import subprocess
-from dbus import SystemBus, Interface
 
 
 categories = [
@@ -283,6 +282,7 @@ class Bazaar:
             self.__set_text_buffer__('recipie_buffer', data)
     
 
+        self.get_widget('screenshot_image').clear()
         scfile = '/%s/%s/%s/screenshot' % (self.sysapp.repodir, app_data['repo'], app_name)
         if os.path.exists(scfile):
             #print('adding image from',scfile)
