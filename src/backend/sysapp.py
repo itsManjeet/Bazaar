@@ -5,7 +5,7 @@ class SysApp:
         self.config = Config(config_file)
         self.config.parse()
 
-        self.repodir = '/run/media/itsmanjeet/Home/itsmanjeet/Projects/releaxos/data/recipies/'
+        self.repodir = self.config.get('repo_dir')
         self.repos = self.config.get('repo')
 
     def get_cache(self):
