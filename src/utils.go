@@ -78,7 +78,7 @@ func appendApp(app appData) {
 }
 
 func loadApps(apps []appData) {
-	listmodel.Clear()
+	glib.IdleAdd(listmodel.Clear)
 	for _, a := range apps {
 		glib.IdleAdd(appendApp, a)
 	}

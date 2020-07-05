@@ -8,6 +8,7 @@ const (
 	appID   = "in.releax.bazaar"
 	repodir = "/usr/recipies/" // Repository, example "/usr/rcipies/core/acl/recipie"
 	datadir = "/var/lib/app/"  // Database, contain information of installed apps
+	repourl = "https://manjeet.cloudtb.online/apps/"
 )
 
 var categories = []string{

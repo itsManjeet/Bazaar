@@ -34,7 +34,7 @@ func installApp(widget *gtk.Button, app appData) bool {
 		appname := a.name + "-" + a.version + "-" + a.release + "-x86_64.tar.xz"
 		apppath := "/var/cache/build/" + appname
 		if !exists(apppath) {
-			if err := dwndlr.download(apppath, "https://manjeet.cloudtb.online/apps/"+appname); err != nil {
+			if err := dwndlr.download(apppath, repourl+appname); err != nil {
 				glib.IdleAdd(progressbar.SetText, "Error while downoading "+err.Error())
 				time.Sleep(time.Second * 1)
 				return false

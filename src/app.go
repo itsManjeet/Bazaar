@@ -37,7 +37,7 @@ func (a *appData) getDepends() []appData {
 			continue
 		} else {
 			for _, a := range app.getDepends() {
-				if app.isInstalled() || !aplcontain(apl, a.name) {
+				if app.isInstalled() || aplcontain(apl, a.name) {
 					continue
 				}
 				apl = append(apl, a)
@@ -92,6 +92,8 @@ func getapp(name string, repo string) appData {
 				app.license = getcmntval(curline, "License")
 			} else if strings.HasPrefix(curline, "# Depends on") {
 				app.depends = strings.Split(getcmntval(curline, "Depends on"), " ")
+			} else if strings.HasPrefix(curline, "# Icon") {
+				app.icon = getcmntval(curline, "# Icon")
 			}
 		} else if strings.Contains(curline, "=") {
 			if strings.Contains(curline, "version=") {
@@ -131,13 +133,15 @@ func (a appData) geticon(size int) *gdk.Pixbuf {
 	recpath := path.Join(repodir, a.repo, a.name)
 	if exists(recpath + "/icon") {
 		pixbuf, err = gdk.PixbufNewFromFileAtSize(recpath+"/icon", size, size)
+	} else if len(a.icon) != 0 {
+		pixbuf, err = icontheme.LoadIcon(a.icon, size, 0)
 	} else {
 		pixbuf, err = icontheme.LoadIcon(a.name, size, 0)
+	}
+	if err != nil {
+		pixbuf, err = icontheme.LoadIcon("application-x-pak", size, 0)
 		if err != nil {
-			pixbuf, err = icontheme.LoadIcon("application-x-pak", size, 0)
-			if err != nil {
-				return nil
-			}
+			return nil
 		}
 	}
 
