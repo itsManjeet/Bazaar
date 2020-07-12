@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -36,9 +37,10 @@ func (dw *downloader) download(filepath string, url string) error {
 	}
 	defer resp.Body.Close()
 
+	fmt.Println(resp.Header.Get("Content-Length"))
 	dw.total, err = strconv.ParseUint(resp.Header.Get("Content-Length"), 10, 64)
 	if err != nil {
-		return err
+		return errors.New("error while getting file size")
 	}
 	defer resp.Body.Close()
 

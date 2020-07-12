@@ -2,7 +2,7 @@
 Name=Bazaar
 Icon=Application Market
 GenericName=AppMarket
-Exec=bazaar
+Exec=bazaar-pkexec
 Icon=gnome-software
 Terminal=false
 Categories=GTK;Accessories;System

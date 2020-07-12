@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os/exec"
+	"time"
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
@@ -14,8 +15,15 @@ func uninstallApp(widget *gtk.Button, app appData) bool {
 	glib.IdleAdd(widget.SetSensitive, false)
 	glib.IdleAdd(progressbar.Show)
 	glib.IdleAdd(progressbar.SetText, "Uninstalling")
-	out, err := exec.Command("sys-app", "rm", app.name).Output()
-
+	togo := true
+	go func() {
+		for togo {
+			glib.IdleAdd(progressbar.Pulse)
+			time.Sleep(time.Millisecond * 50)
+		}
+	}()
+	out, err := exec.Command("sys-app", "rm", app.name, "--no-ask").Output()
+	togo = false
 	if err != nil {
 		glib.IdleAdd(showError, string(out)+"\nError: "+err.Error())
 	} else {

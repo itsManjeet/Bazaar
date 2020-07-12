@@ -33,6 +33,9 @@ func installApp(widget *gtk.Button, app appData) bool {
 	installer := func(a appData) bool {
 		appname := a.name + "-" + a.version + "-" + a.release + "-x86_64.tar.xz"
 		apppath := "/var/cache/build/" + appname
+		glib.IdleAdd(progressbar.SetFraction, 0.0)
+		dwndlr.current = 0
+		dwndlr.total = 0
 		if !exists(apppath) {
 			if err := dwndlr.download(apppath, repourl+appname); err != nil {
 				glib.IdleAdd(progressbar.SetText, "Error while downoading "+err.Error())
@@ -42,7 +45,15 @@ func installApp(widget *gtk.Button, app appData) bool {
 		}
 
 		glib.IdleAdd(progressbar.SetText, "Installing")
-		out, err := exec.Command("sys-app", "in", a.name).Output()
+		togo := true
+		go func() {
+			for togo {
+				glib.IdleAdd(progressbar.Pulse)
+				time.Sleep(time.Millisecond * 50)
+			}
+		}()
+		out, err := exec.Command("sys-app", "in", a.name, "--no-ask").Output()
+		togo = false
 		if err != nil {
 			glib.IdleAdd(showError, string(out)+"\nError: "+err.Error())
 			return false
@@ -57,6 +68,8 @@ func installApp(widget *gtk.Button, app appData) bool {
 	if len(deps) != 0 {
 		for _, a := range deps {
 			if !installer(a) {
+				glib.IdleAdd(clearAppPage)
+				glib.IdleAdd(setupAppPage, app)
 				return false
 			}
 		}

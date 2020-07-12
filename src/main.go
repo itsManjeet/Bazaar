@@ -54,10 +54,9 @@ func main() {
 		icontheme, err = gtk.IconThemeGetDefault()
 		checkErr(err)
 
-		go initmarket()
-
 		window.Show()
 		application.AddWindow(window)
+
 	})
 
 	application.Connect("shutdown", func() {
@@ -65,9 +64,4 @@ func main() {
 	})
 
 	os.Exit(application.Run(os.Args))
-}
-
-func initmarket() {
-	applist = listapps()
-	loadApps(applist)
 }

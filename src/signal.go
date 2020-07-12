@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/gotk3/gotk3/glib"
+
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -61,9 +63,8 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 	lable := lbl.(*gtk.Label)
 
 	cat, _ := lable.GetText()
-
 	if cat == "All" {
-		loadApps(listapps())
+		glib.IdleAdd(loadApps, listapps())
 	} else if cat == "Installed" {
 		instdir, err := ioutil.ReadDir(datadir)
 		checkErr(err)
@@ -78,7 +79,7 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 			}
 			aplst = append(aplst, a)
 		}
-		loadApps(aplst)
+		glib.IdleAdd(loadApps, aplst)
 	} else {
 		catapplist := make([]appData, 0)
 		for _, a := range listapps() {
@@ -90,7 +91,7 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 			}
 		}
 
-		loadApps(catapplist)
+		glib.IdleAdd(loadApps, catapplist)
 	}
 
 }
