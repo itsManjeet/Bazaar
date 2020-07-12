@@ -92,6 +92,9 @@ func setupAppPage(app appData) {
 	instdData := getWidget("instdData").(*gtk.Grid)
 	reqLabel := getWidget("reqLabel").(*gtk.Label)
 	infoTab := getWidget("infoTab").(*gtk.Notebook)
+	backbtn := getWidget("backButton").(*gtk.Button)
+
+	glib.IdleAdd(backbtn.SetSensitive, true)
 
 	instLabel := getWidget("instLabel").(*gtk.Label)
 	licenseLabel := getWidget("licenseLabel").(*gtk.Label)

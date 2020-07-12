@@ -27,7 +27,10 @@ func installApp(widget *gtk.Button, app appData) bool {
 			glib.IdleAdd(progressbar.SetFraction, parprgs)
 		},
 	}
+	backbtn := getWidget("backButton").(*gtk.Button)
+	glib.IdleAdd(backbtn.SetSensitive, false)
 	glib.IdleAdd(widget.SetSensitive, false)
+
 	glib.IdleAdd(progressbar.Show)
 
 	installer := func(a appData) bool {

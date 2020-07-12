@@ -13,6 +13,8 @@ func uninstallApp(widget *gtk.Button, app appData) bool {
 	log.Println("Uninstalling", app.name)
 
 	glib.IdleAdd(widget.SetSensitive, false)
+	backbtn := getWidget("backButton").(*gtk.Button)
+	glib.IdleAdd(backbtn.SetSensitive, false)
 	glib.IdleAdd(progressbar.Show)
 	glib.IdleAdd(progressbar.SetText, "Uninstalling")
 	togo := true

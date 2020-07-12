@@ -98,7 +98,6 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 
 func onSearchChanged(searchBox *gtk.SearchEntry) {
 	curapp, _ := searchBox.GetText()
-
 	searchapp := make([]appData, 0)
 	for _, a := range applist {
 		if strings.Contains(a.name, curapp) {
