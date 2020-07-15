@@ -24,6 +24,38 @@ type appData struct {
 	depends     []string
 }
 
+type desktopFile struct {
+	name        string
+	command     string
+	icon        string
+	desktopfile string
+}
+
+func parseDesktopFile(add string) (desktopFile, error) {
+	file, err := os.Open(add)
+	checkErr(err)
+	defer file.Close()
+
+	var desk desktopFile
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "=") {
+			data := strings.Split(scanner.Text(), "=")
+			if data[0] == "Name" {
+				desk.name = data[1]
+			} else if data[0] == "Exec" {
+				desk.command = data[1]
+			} else if data[0] == "Icon" {
+				desk.icon = data[1]
+			}
+		}
+	}
+
+	desk.desktopfile = add
+
+	return desk, nil
+}
+
 func (a *appData) getDepends() []appData {
 
 	apl := make([]appData, 0)
@@ -64,6 +96,31 @@ func getFromAppList(appname string) (appData, error) {
 		}
 	}
 	return appData{}, errors.New("Not found")
+}
+
+func getDesktopFile(app appData) ([]desktopFile, error) {
+	if !app.isInstalled() {
+		return []desktopFile{}, errors.New("app is not installed")
+	}
+
+	desktopFiles := make([]desktopFile, 0)
+
+	file, err := os.Open(path.Join(datadir, app.name, "files"))
+	checkErr(err)
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if strings.HasSuffix(scanner.Text(), ".desktop") {
+			desk, err := parseDesktopFile("/" + scanner.Text())
+			if err == nil {
+				desktopFiles = append(desktopFiles, desk)
+			}
+
+		}
+	}
+
+	return desktopFiles, nil
 }
 
 func getapp(name string, repo string) appData {

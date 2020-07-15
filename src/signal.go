@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
+
+	"github.com/gotk3/gotk3/gdk"
 
 	"github.com/gotk3/gotk3/glib"
 
@@ -111,4 +114,9 @@ func onSearchChanged(searchBox *gtk.SearchEntry) {
 func onRefresh(refbtn *gtk.Button) {
 	refbtn.SetSensitive(false)
 	go refreshData(refbtn)
+}
+
+func onDragDrop(window *gtk.Window, ctx *gdk.DragContext, x, y int, data uintptr, m int, t uint) {
+	fmt.Println(x, y)
+	fmt.Println("Reciving data")
 }

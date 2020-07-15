@@ -82,7 +82,7 @@
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="backButton">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -134,6 +134,7 @@
                         <attributes>
                           <attribute name="font-desc" value="Noto Sans 16"/>
                         </attributes>
+                        <signal name="drag-data-received" handler="onDragDrop" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>

@@ -28,6 +28,7 @@ func main() {
 			"onCategorySelect": onCategorySelect,
 			"onSearchChanged":  onSearchChanged,
 			"onRefresh":        onRefresh,
+			"onDragDrop":       onDragDrop,
 		}
 
 		builder.ConnectSignals(signals)
@@ -53,9 +54,9 @@ func main() {
 
 		icontheme, err = gtk.IconThemeGetDefault()
 		checkErr(err)
-		go func() {
-			applist = listapps()
-		}()
+
+		applist = listapps()
+
 		window.Show()
 		application.AddWindow(window)
 

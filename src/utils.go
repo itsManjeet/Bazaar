@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 
 	"github.com/gotk3/gotk3/gdk"
 
@@ -84,6 +85,10 @@ func loadApps(apps []appData) {
 	}
 }
 
+func execApp(btn *gtk.Button, cmd string) {
+	exec.Command("pkexec", "--disable-internal-agent", "exo-open", cmd).Start()
+}
+
 func setupAppPage(app appData) {
 	logoImage := getWidget("logoImage").(*gtk.Image)
 	nameLabel := getWidget("nameLabel").(*gtk.Label)
@@ -158,6 +163,24 @@ func setupAppPage(app appData) {
 			upbtn.Connect("clicked", onUpdateClick, app)
 			upbtn.Show()
 			buttonBox.Add(upbtn)
+		}
+
+		desktopFile, err := getDesktopFile(app)
+		if err == nil {
+			if len(desktopFile) == 1 {
+				dbtn, _ := gtk.ButtonNewWithLabel("open")
+				dbtn.Connect("clicked", execApp, desktopFile[0].desktopfile)
+				dbtn.Show()
+				buttonBox.Add(dbtn)
+			} else {
+				for _, i := range desktopFile {
+					dbtn, _ := gtk.ButtonNewWithLabel(i.name)
+					dbtn.Connect("clicked", execApp, i.desktopfile)
+					dbtn.Show()
+					buttonBox.Add(dbtn)
+				}
+			}
+
 		}
 		btn, _ = gtk.ButtonNewWithLabel("uninstall")
 		btn.Connect("clicked", onUninstallClick, app)
