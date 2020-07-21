@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/itsmanjeet/bazaar/src/app/releax"
+	"github.com/itsmanjeet/bazaar/src/app/store"
 )
 
 const (
@@ -25,5 +27,7 @@ var (
 	progressbar *gtk.ProgressBar
 	refProgress *gtk.ProgressBar
 
-	applist []appData
+	releaxStore releax.Store
+	applist     []store.App
+	stores      []store.Store
 )

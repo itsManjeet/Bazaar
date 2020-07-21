@@ -1,15 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
 
 	"github.com/gotk3/gotk3/gdk"
-
 	"github.com/gotk3/gotk3/glib"
-
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/itsmanjeet/bazaar/src/app/store"
 )
 
 func onBackClick() {
@@ -31,32 +31,36 @@ func clearAppPage() {
 	})
 }
 
-func onInstallClick(widget *gtk.Button, app appData) {
+func onInstallClick(widget *gtk.Button, app store.App) {
 	progressbar.Show()
-	go installApp(widget, app)
 }
 
-func onUninstallClick(widget *gtk.Button, app appData) {
+func onUninstallClick(widget *gtk.Button, app store.App) {
 
-	go uninstallApp(widget, app)
 }
 
-func onUpdateClick(widget *gtk.Button, app appData) {
-	go updateApp(widget, app)
+func onUpdateClick(widget *gtk.Button, app store.App) {
 }
 
 func onAppSelect(iview *gtk.IconView, tpth *gtk.TreePath) {
 	iter, err := listmodel.GetIter(tpth)
 	checkErr(err)
 	nameValue, _ := listmodel.GetValue(iter, 1)
-	repoValue, _ := listmodel.GetValue(iter, 2)
-
 	appName, _ := nameValue.GetString()
-	repo, _ := repoValue.GetString()
 
-	app := getapp(appName, repo)
-	setupAppPage(app)
+	var app store.App
 
+	for _, s := range stores {
+		app, err = s.GetApp(appName)
+		if err == nil {
+			break
+		}
+	}
+
+	if app == nil {
+		checkErr(errors.New("Unknown error: unable to find listed app"))
+	}
+	setupPage(app)
 	stackPage.SetVisibleChildName("appPage")
 }
 
@@ -67,32 +71,32 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 
 	cat, _ := lable.GetText()
 	if cat == "All" {
-		glib.IdleAdd(loadApps, listapps())
+		glib.IdleAdd(loadApps, applist)
 	} else if cat == "Installed" {
 		instdir, err := ioutil.ReadDir(datadir)
 		checkErr(err)
-		aplst := make([]appData, 0)
+		aplst := make([]store.App, 0)
 		for _, z := range instdir {
 			if !z.IsDir() {
 				continue
 			}
-			a, err := getFromAppList(z.Name())
-			if err != nil {
-				continue
-			}
-			aplst = append(aplst, a)
+			// a, err := getFromAppList(z.Name())
+			// if err != nil {
+			// 	continue
+			// }
+			// aplst = append(aplst, a)
 		}
 		glib.IdleAdd(loadApps, aplst)
 	} else {
-		catapplist := make([]appData, 0)
-		for _, a := range listapps() {
-			for _, c := range a.category {
-				if c == cat {
-					catapplist = append(catapplist, a)
-					break
-				}
-			}
-		}
+		catapplist := make([]store.App, 0)
+		// for _, a := range listapps() {
+		// 	for _, c := range a.category {
+		// 		if c == cat {
+		// 			catapplist = append(catapplist, a)
+		// 			break
+		// 		}
+		// 	}
+		// }
 
 		glib.IdleAdd(loadApps, catapplist)
 	}
@@ -101,9 +105,9 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 
 func onSearchChanged(searchBox *gtk.SearchEntry) {
 	curapp, _ := searchBox.GetText()
-	searchapp := make([]appData, 0)
+	searchapp := make([]store.App, 0)
 	for _, a := range applist {
-		if strings.Contains(a.name, curapp) {
+		if strings.Contains(strings.ToLower(a.Name()), strings.ToLower(curapp)) {
 			searchapp = append(searchapp, a)
 		}
 	}
@@ -113,7 +117,7 @@ func onSearchChanged(searchBox *gtk.SearchEntry) {
 
 func onRefresh(refbtn *gtk.Button) {
 	refbtn.SetSensitive(false)
-	go refreshData(refbtn)
+	//go refreshData(refbtn)
 }
 
 func onDragDrop(window *gtk.Window, ctx *gdk.DragContext, x, y int, data uintptr, m int, t uint) {

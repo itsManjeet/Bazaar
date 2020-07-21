@@ -1,10 +1,11 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/itsmanjeet/bazaar/src/app/store"
 
 	"github.com/gotk3/gotk3/gdk"
 
@@ -69,16 +70,15 @@ func pixbuftype() glib.Type {
 	return pixbuf.TypeFromInstance()
 }
 
-func appendApp(app appData) {
+func appendApp(app store.App) {
 	iter := listmodel.Append()
-	icon := app.geticon(64)
+	icon := app.Icon(64)
 
 	listmodel.SetValue(iter, 0, icon)
-	listmodel.SetValue(iter, 1, app.name)
-	listmodel.SetValue(iter, 2, app.repo)
+	listmodel.SetValue(iter, 1, app.Name())
 }
 
-func loadApps(apps []appData) {
+func loadApps(apps []store.App) {
 	glib.IdleAdd(listmodel.Clear)
 	for _, a := range apps {
 		glib.IdleAdd(appendApp, a)
@@ -87,119 +87,4 @@ func loadApps(apps []appData) {
 
 func execApp(btn *gtk.Button, cmd string) {
 	exec.Command("pkexec", "--disable-internal-agent", "exo-open", cmd).Start()
-}
-
-func setupAppPage(app appData) {
-	logoImage := getWidget("logoImage").(*gtk.Image)
-	nameLabel := getWidget("nameLabel").(*gtk.Label)
-	descLabel := getWidget("descLabel").(*gtk.Label)
-	buttonBox := getWidget("buttonBox").(*gtk.Box)
-	instdData := getWidget("instdData").(*gtk.Grid)
-	reqLabel := getWidget("reqLabel").(*gtk.Label)
-	infoTab := getWidget("infoTab").(*gtk.Notebook)
-	backbtn := getWidget("backButton").(*gtk.Button)
-
-	glib.IdleAdd(backbtn.SetSensitive, true)
-
-	instLabel := getWidget("instLabel").(*gtk.Label)
-	licenseLabel := getWidget("licenseLabel").(*gtk.Label)
-	urlLabel := getWidget("urlLabel").(*gtk.Label)
-
-	fileList := getWidget("fileList").(*gtk.TextView)
-
-	infoTab.SetCurrentPage(0)
-	deps := app.getDepends()
-	if len(deps) == 0 {
-		reqLabel.SetMarkup("<span foreground=\"green\"><b>✔️ ok</b></span>")
-	} else {
-		depstr := ""
-		for _, x := range deps {
-			depstr += x.name + " "
-		}
-
-		reqLabel.SetText(depstr)
-	}
-
-	logoImage.SetFromPixbuf(app.geticon(128))
-	descLabel.SetText(app.description)
-
-	licenseLabel.SetText(app.license)
-	urlLabel.SetText(app.url)
-
-	lsbuf, _ := fileList.GetBuffer()
-	lsbuf.SetText("")
-
-	var btn *gtk.Button
-	if !app.isInstalled() {
-		nameLabel.SetText(app.name + " " + app.version + " " + app.release)
-		btn, _ = gtk.ButtonNewWithLabel("install")
-		btn.Connect("clicked", onInstallClick, app)
-		instdData.SetVisible(false)
-
-	} else {
-
-		instver := getInstVer(app)
-		instrel := getInstRel(app)
-		update := false
-		labelstring := app.name + " "
-		if instver != app.version {
-			labelstring += "[" + instver + "->" + app.version + "] "
-			update = true
-		} else {
-			labelstring += instver + " "
-		}
-
-		if instrel != app.release {
-			labelstring += "[" + instrel + "->" + app.release + "]"
-			update = true
-		} else {
-			labelstring += instrel
-		}
-
-		nameLabel.SetText(labelstring)
-
-		if update {
-			upbtn, _ := gtk.ButtonNewWithLabel("update")
-			upbtn.Connect("clicked", onUpdateClick, app)
-			upbtn.Show()
-			buttonBox.Add(upbtn)
-		}
-
-		desktopFile, err := getDesktopFile(app)
-		if err == nil {
-			if len(desktopFile) == 1 {
-				dbtn, _ := gtk.ButtonNewWithLabel("open")
-				dbtn.Connect("clicked", execApp, desktopFile[0].desktopfile)
-				dbtn.Show()
-				buttonBox.Add(dbtn)
-			} else {
-				for _, i := range desktopFile {
-					dbtn, _ := gtk.ButtonNewWithLabel(i.name)
-					dbtn.Connect("clicked", execApp, i.desktopfile)
-					dbtn.Show()
-					buttonBox.Add(dbtn)
-				}
-			}
-
-		}
-		btn, _ = gtk.ButtonNewWithLabel("uninstall")
-		btn.Connect("clicked", onUninstallClick, app)
-		instdData.SetVisible(true)
-
-		fptr, err := ioutil.ReadFile(datadir + app.name + "/timestamp")
-		if err != nil {
-			instLabel.SetText(err.Error())
-		} else {
-			instLabel.SetText(string(fptr))
-		}
-
-		apflst, err := ioutil.ReadFile(datadir + app.name + "/files")
-		if err == nil {
-			lsbuf.SetText(string(apflst))
-		}
-
-	}
-
-	btn.Show()
-	buttonBox.Add(btn)
 }

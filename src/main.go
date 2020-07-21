@@ -55,7 +55,8 @@ func main() {
 		icontheme, err = gtk.IconThemeGetDefault()
 		checkErr(err)
 
-		applist = listapps()
+		applist = listApps()
+		print(applist)
 
 		window.Show()
 		application.AddWindow(window)
