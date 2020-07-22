@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"errors"
 	"io/ioutil"
+	"os/exec"
+	"strings"
 
 	"github.com/itsmanjeet/bazaar/src/app/store"
 )
@@ -53,6 +55,25 @@ func (s Store) GetApp(appname string) (store.App, error) {
 }
 
 func (s Store) IsInstalled(name string) bool {
+	list, err := exec.Command("flatpak", "list", "--columns=app").Output()
+	if err != nil {
+		return false
+	}
+
+	appsList := strings.Split(string(list), "\n")
+
+	app, err := s.GetApp(name)
+	if err != nil {
+		return false
+	}
+
+	appID := strings.ReplaceAll(app.ID(), ".desktop", "")
+	for _, a := range appsList {
+		if appID == a {
+			return true
+		}
+	}
+
 	return false
 }
 

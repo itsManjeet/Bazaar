@@ -16,12 +16,17 @@ import (
 
 // App interface
 type App interface {
+	ID() string
 	Name() string
 	Version() string
 	Release() string
 	Description() string
 	Depends() []string
 	PackageFile() string
+	Url() string
+	Categories() []string
+	License() string
+	Store() string
 	Icon(size uint) *gdk.Pixbuf
 }
 

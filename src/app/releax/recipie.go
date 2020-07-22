@@ -17,14 +17,20 @@ type Recipie struct {
 	release     string
 	description string
 	url         string
+	license     string
 	apptype     string
 	depends     []string
 	icon        string
 	filepath    string
+	categories  []string
 }
 
 // Name return name
 func (r *Recipie) Name() string {
+	return r.name
+}
+
+func (r *Recipie) ID() string {
 	return r.name
 }
 
@@ -42,6 +48,22 @@ func (r *Recipie) Description() string {
 
 func (r *Recipie) Depends() []string {
 	return r.depends
+}
+
+func (r *Recipie) Categories() []string {
+	return r.categories
+}
+
+func (r *Recipie) Url() string {
+	return r.url
+}
+
+func (r *Recipie) License() string {
+	return r.license
+}
+
+func (r *Recipie) Store() string {
+	return "releax"
 }
 
 func (r *Recipie) Icon(size uint) *gdk.Pixbuf {
@@ -110,10 +132,14 @@ func NewFrom(path string) (*Recipie, error) {
 				rcp.description = getCommentedValue(curline, "Description")
 			} else if strings.HasPrefix(curline, "# URL") {
 				rcp.url = getCommentedValue(curline, "URL")
+			} else if strings.HasPrefix(curline, "# License") {
+				rcp.license = getCommentedValue(curline, "License")
 			} else if strings.HasPrefix(curline, "# Depends on") {
 				rcp.depends = strings.Split(getCommentedValue(curline, "Depends on"), " ")
 			} else if strings.HasPrefix(curline, "# Icon") {
 				rcp.icon = getCommentedValue(curline, "Icon")
+			} else if strings.HasPrefix(curline, "# Category") {
+				rcp.categories = strings.Split(getCommentedValue(curline, "Category"), " ")
 			}
 		} else if strings.Contains(curline, "=") {
 			if strings.Contains(curline, "version=") {
