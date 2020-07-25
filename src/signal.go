@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"strings"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -72,31 +71,16 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 	cat, _ := lable.GetText()
 	if cat == "All" {
 		glib.IdleAdd(loadApps, applist)
-	} else if cat == "Installed" {
-		instdir, err := ioutil.ReadDir(datadir)
-		checkErr(err)
-		aplst := make([]store.App, 0)
-		for _, z := range instdir {
-			if !z.IsDir() {
-				continue
-			}
-			// a, err := getFromAppList(z.Name())
-			// if err != nil {
-			// 	continue
-			// }
-			// aplst = append(aplst, a)
-		}
-		glib.IdleAdd(loadApps, aplst)
 	} else {
 		catapplist := make([]store.App, 0)
-		// for _, a := range listapps() {
-		// 	for _, c := range a.category {
-		// 		if c == cat {
-		// 			catapplist = append(catapplist, a)
-		// 			break
-		// 		}
-		// 	}
-		// }
+		for _, a := range applist {
+			for _, c := range a.Categories() {
+				if strings.ToLower(c) == strings.ToLower(cat) {
+					catapplist = append(catapplist, a)
+					break
+				}
+			}
+		}
 
 		glib.IdleAdd(loadApps, catapplist)
 	}
