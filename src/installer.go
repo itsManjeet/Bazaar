@@ -40,7 +40,7 @@ func installApp(widget *gtk.Button, app appData) bool {
 		dwndlr.current = 0
 		dwndlr.total = 0
 		if !exists(apppath) {
-			if err := dwndlr.download(apppath, repourl+appname); err != nil {
+			if err := dwndlr.download(apppath, conf.BinaryURL+"/"+appname); err != nil {
 				glib.IdleAdd(progressbar.SetText, "Error while downoading "+err.Error())
 				time.Sleep(time.Second * 1)
 				return false

@@ -9,15 +9,15 @@ DATADIR=${DATADIR:-"$PREFIX/share"}
 mkdir -pv build/
 cd src
 
-mv config{.go,.old}
+mv const{.go,.old}
 
 echo "
 package main
 const uiFile = \"/$DATADIR/bazaar/ui.glade\"
-" > config.go
+" > const.go
 
 go build -o ../build/bazaar
-mv config{.old,.go}
+mv const{.old,.go}
 cd ..
 
 strip build/bazaar

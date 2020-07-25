@@ -173,14 +173,14 @@ func setupAppPage(app appData) {
 		btn.Connect("clicked", onUninstallClick, app)
 		instdData.SetVisible(true)
 
-		fptr, err := ioutil.ReadFile(datadir + app.name + "/timestamp")
+		fptr, err := ioutil.ReadFile(conf.DataDir + app.name + "/timestamp")
 		if err != nil {
 			instLabel.SetText(err.Error())
 		} else {
 			instLabel.SetText(string(fptr))
 		}
 
-		apflst, err := ioutil.ReadFile(datadir + app.name + "/files")
+		apflst, err := ioutil.ReadFile(conf.DataDir + app.name + "/files")
 		if err == nil {
 			lsbuf.SetText(string(apflst))
 		}

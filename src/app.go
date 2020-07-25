@@ -72,7 +72,7 @@ func getapp(name string, repo string) appData {
 		repo: repo,
 	}
 
-	file, err := os.Open(path.Join(repodir, repo, name, "recipie"))
+	file, err := os.Open(path.Join(conf.RecipieDir, repo, name, "recipie"))
 	checkErr(err)
 	defer file.Close()
 
@@ -130,7 +130,7 @@ func getasnval(curline, variable string) string {
 func (a appData) geticon(size int) *gdk.Pixbuf {
 	var pixbuf *gdk.Pixbuf
 	var err error
-	recpath := path.Join(repodir, a.repo, a.name)
+	recpath := path.Join(conf.RecipieDir, a.repo, a.name)
 	if exists(recpath + "/icon") {
 		pixbuf, err = gdk.PixbufNewFromFileAtSize(recpath+"/icon", size, size)
 	} else if len(a.icon) != 0 {
@@ -149,7 +149,7 @@ func (a appData) geticon(size int) *gdk.Pixbuf {
 }
 
 func (a appData) isInstalled() bool {
-	return exists(path.Join(datadir, a.name))
+	return exists(path.Join(conf.DataDir, a.name))
 }
 
 func getInstVer(app appData) string {
@@ -157,7 +157,7 @@ func getInstVer(app appData) string {
 		return string("")
 	}
 
-	file, err := os.Open(path.Join(datadir, app.name, "info"))
+	file, err := os.Open(path.Join(conf.DataDir, app.name, "info"))
 	checkErr(err)
 
 	scanner := bufio.NewScanner(file)
@@ -179,7 +179,7 @@ func getInstRel(app appData) string {
 		return string("")
 	}
 
-	file, err := os.Open(path.Join(datadir, app.name, "info"))
+	file, err := os.Open(path.Join(conf.DataDir, app.name, "info"))
 	checkErr(err)
 
 	scanner := bufio.NewScanner(file)
@@ -200,7 +200,7 @@ func listapps() []appData {
 
 	applist := make([]appData, 0)
 
-	repo, err := ioutil.ReadDir(repodir)
+	repo, err := ioutil.ReadDir(conf.RecipieDir)
 	checkErr(err)
 
 	for _, r := range repo {
@@ -208,10 +208,10 @@ func listapps() []appData {
 			continue
 		}
 
-		appdir, err := ioutil.ReadDir(path.Join(repodir, r.Name()))
+		appdir, err := ioutil.ReadDir(path.Join(conf.RecipieDir, r.Name()))
 		checkErr(err)
 		for _, a := range appdir {
-			recpp := path.Join(repodir, r.Name(), a.Name(), "recipie")
+			recpp := path.Join(conf.RecipieDir, r.Name(), a.Name(), "recipie")
 			if !a.IsDir() || !exists(recpp) {
 				continue
 			}

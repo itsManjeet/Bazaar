@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/BurntSushi/toml"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -11,6 +12,10 @@ import (
 func main() {
 	application, err := gtk.ApplicationNew(appID, glib.APPLICATION_FLAGS_NONE)
 	checkErr(err)
+
+	if _, err := toml.DecodeFile(configFile, &conf); err != nil {
+		showError(err.Error())
+	}
 
 	application.Connect("startup", func() {
 		log.Println("application starting")
@@ -60,9 +65,7 @@ func main() {
 
 		icontheme, err = gtk.IconThemeGetDefault()
 		checkErr(err)
-
 		applist = listapps()
-
 		window.Show()
 		application.AddWindow(window)
 
