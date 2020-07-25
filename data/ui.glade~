@@ -25,7 +25,7 @@
           <object class="GtkStack" id="stackPage">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="transition_duration">500</property>
+            <property name="transition_duration">300</property>
             <property name="transition_type">slide-left-right</property>
             <child>
               <object class="GtkPaned">
@@ -35,6 +35,7 @@
                   <object class="GtkListBox" id="catListBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">50</property>
                     <signal name="row-selected" handler="onCategorySelect" swapped="no"/>
                   </object>
                   <packing>
@@ -82,7 +83,7 @@
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="backButton">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>

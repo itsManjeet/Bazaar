@@ -50,16 +50,26 @@ func dialogBox(msg string) *gtk.MessageDialog {
 	return dialog
 }
 
-func categoryLabel(name string) *gtk.Label {
+func categoryLabel(name string, icon string) *gtk.Box {
+
+	gbox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 5)
+
 	lbl, err := gtk.LabelNew(name)
 	checkErr(err)
 
-	lbl.SetMarginBottom(16)
-	lbl.SetMarginTop(16)
-	lbl.SetMarginStart(45)
-	lbl.SetMarginEnd(45)
+	gbox.SetMarginBottom(16)
+	gbox.SetMarginTop(16)
+	gbox.SetMarginStart(45)
+	gbox.SetMarginEnd(45)
+
+	ic, _ := gtk.ImageNewFromIconName(icon, 0)
+	ic.Show()
 	lbl.Show()
-	return lbl
+	gbox.PackStart(ic, false, false, 1)
+	gbox.PackStart(lbl, true, true, 1)
+
+	gbox.ShowAll()
+	return gbox
 }
 
 func pixbuftype() glib.Type {
@@ -179,4 +189,39 @@ func setupAppPage(app appData) {
 
 	btn.Show()
 	buttonBox.Add(btn)
+}
+
+func loadCategory(cat string) {
+	if cat == "Market" {
+		glib.IdleAdd(loadApps, listapps())
+	} else if cat == "Must Have" {
+		acl := make([]appData, 0)
+		for _, a := range []string{
+			"Accessories", "Graphics", "Internet", "Multimedia", "Office",
+		} {
+			acl = append(acl, listCategory(a)...)
+			glib.IdleAdd(loadApps, acl)
+		}
+	} else if cat == "Personalize" {
+		acl := make([]appData, 0)
+		for _, a := range []string{
+			"Customizations", "Plugins",
+		} {
+			acl = append(acl, listCategory(a)...)
+			glib.IdleAdd(loadApps, acl)
+		}
+	} else if cat == "Developer" {
+		acl := make([]appData, 0)
+		for _, a := range []string{
+			"Development", "Libraries", "Library",
+		} {
+			acl = append(acl, listCategory(a)...)
+			glib.IdleAdd(loadApps, acl)
+		}
+	} else if cat == "System" {
+		glib.IdleAdd(loadApps, listCategory("System"))
+	} else if cat == "Games" {
+		glib.IdleAdd(loadApps, listCategory("Games"))
+	}
+
 }

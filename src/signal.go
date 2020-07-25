@@ -1,10 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
 	"strings"
-
-	"github.com/gotk3/gotk3/glib"
 
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -57,43 +54,37 @@ func onAppSelect(iview *gtk.IconView, tpth *gtk.TreePath) {
 	stackPage.SetVisibleChildName("appPage")
 }
 
+func listCategory(cat string) []appData {
+	catapplist := make([]appData, 0)
+	for _, a := range listapps() {
+		for _, c := range a.category {
+			if c == cat {
+				catapplist = append(catapplist, a)
+				break
+			}
+		}
+	}
+	return catapplist
+}
+
 func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
-	catlbl, _ := selrow.GetChild()
-	lbl, _ := gtk.WidgetToLabel(catlbl)
-	lable := lbl.(*gtk.Label)
 
-	cat, _ := lable.GetText()
-	if cat == "All" {
-		glib.IdleAdd(loadApps, listapps())
-	} else if cat == "Installed" {
-		instdir, err := ioutil.ReadDir(datadir)
-		checkErr(err)
-		aplst := make([]appData, 0)
-		for _, z := range instdir {
-			if !z.IsDir() {
-				continue
-			}
-			a, err := getFromAppList(z.Name())
-			if err != nil {
-				continue
-			}
-			aplst = append(aplst, a)
-		}
-		glib.IdleAdd(loadApps, aplst)
-	} else {
-		catapplist := make([]appData, 0)
-		for _, a := range listapps() {
-			for _, c := range a.category {
-				if c == cat {
-					catapplist = append(catapplist, a)
-					break
-				}
-			}
-		}
+	selboxwid, _ := selrow.GetChild()
 
-		glib.IdleAdd(loadApps, catapplist)
+	selbox := gtk.Box{
+		Container: gtk.Container{Widget: *selboxwid},
 	}
 
+	glist := selbox.GetChildren()
+	lbldata := glist.NthData(1)
+	lblwid := lbldata.(*gtk.Widget)
+	lbl := gtk.Label{
+		Widget: *lblwid,
+	}
+
+	cat, _ := lbl.GetText()
+
+	go loadCategory(cat)
 }
 
 func onSearchChanged(searchBox *gtk.SearchEntry) {

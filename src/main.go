@@ -47,15 +47,22 @@ func main() {
 		appIconView.SetPixbufColumn(0)
 		appIconView.SetTextColumn(1)
 
-		for _, a := range categories {
-			catListBox.Add(categoryLabel(a))
+		buildCat := func() {
+			glib.IdleAdd(catListBox.Add, categoryLabel("Market", "amarok_cart_view"))
+			glib.IdleAdd(catListBox.Add, categoryLabel("Must Have", "folder-bookmark"))
+			glib.IdleAdd(catListBox.Add, categoryLabel("Personalize", "draw-brush"))
+			glib.IdleAdd(catListBox.Add, categoryLabel("Games", "folder-games"))
+			glib.IdleAdd(catListBox.Add, categoryLabel("Developer", "format-text-code"))
+			glib.IdleAdd(catListBox.Add, categoryLabel("System", "configure"))
 		}
+
+		go buildCat()
 
 		icontheme, err = gtk.IconThemeGetDefault()
 		checkErr(err)
-		go func() {
-			applist = listapps()
-		}()
+
+		applist = listapps()
+
 		window.Show()
 		application.AddWindow(window)
 
