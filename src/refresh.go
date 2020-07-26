@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 	"time"
@@ -10,6 +11,14 @@ import (
 )
 
 func refreshData(refbtn *gtk.Button) {
+	updcont := getWidget("headerContainer").(*gtk.Box)
+
+	glist := updcont.GetChildren()
+	glist.Foreach(func(item interface{}) {
+		gtkWid := item.(*gtk.Widget)
+		gtkWid.Destroy()
+	})
+
 	cmd := exec.Command("sys-app", "rf")
 	s := true
 	glib.IdleAdd(refProgress.SetVisible, true)
@@ -37,6 +46,7 @@ func refreshData(refbtn *gtk.Button) {
 	}
 
 	cmdout, _ := exec.Command("sys-app", "dry-check-update").Output()
+	apd := make([]appData, 0)
 	if len(cmdout) != 0 {
 		a := strings.Split(string(cmdout), "\n")
 		upda := ""
@@ -52,13 +62,9 @@ func refreshData(refbtn *gtk.Button) {
 
 		applist = listapps()
 
-		apd := make([]appData, 0)
 		for _, x := range strings.Split(upda, " ") {
 			ap, err := getFromAppList(x)
 			if err != nil {
-				continue
-			}
-			if ap.name == "double-conversion" {
 				continue
 			}
 			apd = append(apd, ap)
@@ -68,6 +74,27 @@ func refreshData(refbtn *gtk.Button) {
 	glib.IdleAdd(refProgress.SetVisible, false)
 	glib.IdleAdd(refbtn.SetSensitive, true)
 	s = false
+
+	fmt.Println("Update applist", apd)
+
+	if len(apd) > 0 {
+		fmt.Println("update found", len(apd))
+		updbtn, err := gtk.ButtonNewWithLabel(fmt.Sprintf("(%d) Update !", len(apd)))
+		if err != nil {
+			glib.IdleAdd(showError, err.Error())
+			return
+		}
+
+		glib.IdleAdd(updcont.Add, updbtn)
+		glib.IdleAdd(updbtn.Show)
+
+		updbtn.Connect("clicked", onUpdateButtonClick, apd)
+	}
+
 	return
 
+}
+
+func onUpdateButtonClick(btn *gtk.Button, apd []appData) {
+	go doUpdate(apd)
 }

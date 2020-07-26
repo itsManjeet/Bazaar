@@ -193,7 +193,13 @@ func setupAppPage(app appData) {
 
 func loadCategory(cat string) {
 	if cat == "Market" {
-		glib.IdleAdd(loadApps, listapps())
+		acl := make([]appData, 0)
+		for _, a := range listapps() {
+			if a.repo == "extra" {
+				acl = append(acl, a)
+			}
+		}
+		glib.IdleAdd(loadApps, acl)
 	} else if cat == "Must Have" {
 		acl := make([]appData, 0)
 		for _, a := range []string{

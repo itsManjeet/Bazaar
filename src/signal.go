@@ -1,7 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"log"
+	"os"
 	"strings"
+
+	"github.com/BurntSushi/toml"
+
+	"github.com/gotk3/gotk3/gdk"
 
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -102,4 +109,72 @@ func onSearchChanged(searchBox *gtk.SearchEntry) {
 func onRefresh(refbtn *gtk.Button) {
 	refbtn.SetSensitive(false)
 	go refreshData(refbtn)
+}
+
+func onDragData(window *gtk.Window, context *gdk.DragContext, x, y int, dataPtr uintptr, info, time uint) {
+	data := string(gtk.GetData(dataPtr))
+
+	data = strings.TrimSpace(data)
+
+	if strings.HasPrefix(data, "file://") {
+		data = strings.ReplaceAll(data, "file://", "")
+	} else {
+		showError("unable to handle invalid file type or method of drop")
+		return
+	}
+
+	if strings.HasSuffix(data, ".flatpakref") {
+		log.Println("dropped flatpak refrence file -", data)
+		go handleFlatpak(data)
+
+	} else if strings.HasSuffix(data, "/recipie") {
+		log.Println("dropped recipie file -", data)
+		go handleRecipie(data)
+
+	} else if strings.HasSuffix(data, "x86_64.tar.xz") {
+		log.Println("dropped package file -", data)
+		go handlePkg(data)
+	} else {
+		showError("Invalid file dropped " + data)
+	}
+}
+
+func onSettingClick() {
+	log.Println("clicking")
+	stackPage.SetVisibleChildName("settingPage")
+
+	getWidget("sourceEntry").(*gtk.Entry).SetText(conf.SourceURL)
+	getWidget("binaryEntry").(*gtk.Entry).SetText(conf.BinaryURL)
+
+	getWidget("recipieEntry").(*gtk.Entry).SetText(conf.RecipieDir)
+	getWidget("bookEntry").(*gtk.Entry).SetText(strings.Join(conf.Repos, " "))
+
+}
+
+func onApplyBtnClick() {
+	conf.SourceURL, _ = getWidget("sourceEntry").(*gtk.Entry).GetText()
+	conf.BinaryURL, _ = getWidget("binaryEntry").(*gtk.Entry).GetText()
+
+	conf.RecipieDir, _ = getWidget("recipieEntry").(*gtk.Entry).GetText()
+	r, _ := getWidget("bookEntry").(*gtk.Entry).GetText()
+	conf.Repos = strings.Split(r, " ")
+
+}
+
+func saveConfig() {
+	buf := new(bytes.Buffer)
+	if err := toml.NewEncoder(buf).Encode(conf); err != nil {
+		log.Println(err)
+	}
+
+	fptr, err := os.OpenFile(configFile, os.O_CREATE|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer fptr.Close()
+
+	_, err = fptr.Write([]byte(buf.String()))
+	showError("error while saving file " + err.Error())
+
+	fptr.Close()
 }

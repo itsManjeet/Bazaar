@@ -61,3 +61,16 @@ func updateApp(widget *gtk.Button, app appData) bool {
 	glib.IdleAdd(setupAppPage, app)
 	return status
 }
+
+func doUpdate(apd []appData) {
+	if err := doProcess([]string{"sys-app", "update"}, "/tmp/"); err != nil {
+		showError(err.Error())
+	}
+	updcont := getWidget("headerContainer").(*gtk.Box)
+
+	glist := updcont.GetChildren()
+	glist.Foreach(func(item interface{}) {
+		gtkWid := item.(*gtk.Widget)
+		gtkWid.Destroy()
+	})
+}

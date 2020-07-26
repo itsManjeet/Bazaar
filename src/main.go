@@ -4,17 +4,20 @@ import (
 	"log"
 	"os"
 
+	"github.com/gotk3/gotk3/gdk"
+
 	"github.com/BurntSushi/toml"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 func main() {
+
 	application, err := gtk.ApplicationNew(appID, glib.APPLICATION_FLAGS_NONE)
 	checkErr(err)
 
 	if _, err := toml.DecodeFile(configFile, &conf); err != nil {
-		showError(err.Error())
+		log.Println(err.Error())
 	}
 
 	application.Connect("startup", func() {
@@ -28,11 +31,14 @@ func main() {
 		checkErr(err)
 
 		signals := map[string]interface{}{
-			"onAppSelect":      onAppSelect,
-			"onBackClick":      onBackClick,
-			"onCategorySelect": onCategorySelect,
-			"onSearchChanged":  onSearchChanged,
-			"onRefresh":        onRefresh,
+			"onAppSelect":       onAppSelect,
+			"onBackClick":       onBackClick,
+			"onCategorySelect":  onCategorySelect,
+			"onSearchChanged":   onSearchChanged,
+			"onRefresh":         onRefresh,
+			"onBackFromProcess": onBackFromProcess,
+			"onSettingClick":    onSettingClick,
+			"onApplyBtnClick":   onApplyBtnClick,
 		}
 
 		builder.ConnectSignals(signals)
@@ -48,6 +54,19 @@ func main() {
 		checkErr(err)
 
 		appIconView.SetModel(listmodel)
+
+		window.Connect("drag-data-received", onDragData)
+		// Setup drag and drop
+		var targets []gtk.TargetEntry
+		te, err := gtk.TargetEntryNew("text/uri-list", gtk.TARGET_OTHER_APP, 0)
+		checkErr(err)
+
+		targets = append(targets, *te)
+		window.DragDestSet(
+			gtk.DEST_DEFAULT_ALL,
+			targets,
+			gdk.ACTION_COPY,
+		)
 
 		appIconView.SetPixbufColumn(0)
 		appIconView.SetTextColumn(1)
