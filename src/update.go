@@ -35,7 +35,7 @@ func updateApp(widget *gtk.Button, app appData) bool {
 		}
 
 		glib.IdleAdd(progressbar.SetText, "updating")
-		out, err := exec.Command("sys-appupdate", a.name).Output()
+		out, err := exec.Command("app-update", a.name).Output()
 		if err != nil {
 			glib.IdleAdd(showError, string(out)+"\nError: "+err.Error())
 			return false
@@ -63,7 +63,7 @@ func updateApp(widget *gtk.Button, app appData) bool {
 }
 
 func doUpdate(apd []appData) {
-	if err := doProcess([]string{"sys-app", "update"}, "/tmp/"); err != nil {
+	if err := doProcess([]string{"app", "update"}, "/tmp/"); err != nil {
 		showError(err.Error())
 	}
 	updcont := getWidget("headerContainer").(*gtk.Box)

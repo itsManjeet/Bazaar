@@ -16,14 +16,14 @@ func onBackFromProcess() {
 
 func onDone() {
 	backBtn := getWidget("backBtn").(*gtk.Button)
-	glib.IdleAdd(backBtn.SetVisible, true)
+	glib.IdleAdd(backBtn.SetSensitive, true)
 }
 
 func doProcess(cmd []string, dir string) error {
 	glib.IdleAdd(stackPage.SetVisibleChildName, "processPage")
 
 	backBtn := getWidget("backBtn").(*gtk.Button)
-	glib.IdleAdd(backBtn.SetVisible, false)
+	glib.IdleAdd(backBtn.SetSensitive, false)
 
 	term = vte.NewTerminal()
 

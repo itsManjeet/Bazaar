@@ -433,10 +433,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="processBox">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_top">30</property>
+                <property name="margin_bottom">20</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel">
@@ -457,6 +458,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_bottom">30</property>
                     <property name="label" translatable="yes">Please let the process done !</property>
                     <attributes>
                       <attribute name="font-desc" value="Monospace 12"/>
@@ -469,27 +471,38 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkBox" id="processBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkButton" id="backBtn">
                     <property name="label" translatable="yes">Go Back !</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="halign">start</property>
-                    <property name="valign">start</property>
+                    <property name="halign">center</property>
                     <property name="margin_start">30</property>
                     <property name="margin_end">30</property>
-                    <property name="margin_top">10</property>
+                    <property name="margin_top">50</property>
                     <property name="margin_bottom">10</property>
                     <signal name="clicked" handler="onBackFromProcess" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
               </object>
               <packing>

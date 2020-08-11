@@ -55,7 +55,7 @@ func installApp(widget *gtk.Button, app appData) bool {
 				time.Sleep(time.Millisecond * 50)
 			}
 		}()
-		out, err := exec.Command("sys-app", "in", a.name, "--no-ask").Output()
+		out, err := exec.Command("app", "in", a.name, "--no-ask").Output()
 		togo = false
 		if err != nil {
 			glib.IdleAdd(showError, string(out)+"\nError: "+err.Error())

@@ -173,14 +173,14 @@ func setupAppPage(app appData) {
 		btn.Connect("clicked", onUninstallClick, app)
 		instdData.SetVisible(true)
 
-		fptr, err := ioutil.ReadFile(conf.DataDir + app.name + "/timestamp")
+		fptr, err := ioutil.ReadFile(conf.DataDir + "/" + app.name + "/timestamp")
 		if err != nil {
 			instLabel.SetText(err.Error())
 		} else {
 			instLabel.SetText(string(fptr))
 		}
 
-		apflst, err := ioutil.ReadFile(conf.DataDir + app.name + "/files")
+		apflst, err := ioutil.ReadFile(conf.DataDir + "/" + app.name + "/files")
 		if err == nil {
 			lsbuf.SetText(string(apflst))
 		}
@@ -192,42 +192,49 @@ func setupAppPage(app appData) {
 }
 
 func loadCategory(cat string) {
+	if val, ok := cacheData[cat]; ok {
+		log.Println("loading for cache")
+		glib.IdleAdd(loadApps, val)
+
+		return
+	}
+
+	acl := make([]appData, 0)
 	if cat == "Market" {
-		acl := make([]appData, 0)
 		for _, a := range listapps() {
 			if a.repo == "extra" {
 				acl = append(acl, a)
 			}
 		}
-		glib.IdleAdd(loadApps, acl)
 	} else if cat == "Must Have" {
-		acl := make([]appData, 0)
 		for _, a := range []string{
 			"Accessories", "Graphics", "Internet", "Multimedia", "Office",
 		} {
 			acl = append(acl, listCategory(a)...)
-			glib.IdleAdd(loadApps, acl)
 		}
 	} else if cat == "Personalize" {
-		acl := make([]appData, 0)
+
 		for _, a := range []string{
 			"Customizations", "Plugins",
 		} {
 			acl = append(acl, listCategory(a)...)
-			glib.IdleAdd(loadApps, acl)
 		}
 	} else if cat == "Developer" {
-		acl := make([]appData, 0)
 		for _, a := range []string{
 			"Development", "Libraries", "Library",
 		} {
 			acl = append(acl, listCategory(a)...)
-			glib.IdleAdd(loadApps, acl)
 		}
 	} else if cat == "System" {
-		glib.IdleAdd(loadApps, listCategory("System"))
+		acl = listCategory(cat)
 	} else if cat == "Games" {
-		glib.IdleAdd(loadApps, listCategory("Games"))
+		acl = listCategory(cat)
 	}
+
+	log.Println("Cat :", cat)
+
+	cacheData[cat] = make([]appData, 0)
+	cacheData[cat] = append(cacheData[cat], acl...)
+	glib.IdleAdd(loadApps, acl)
 
 }

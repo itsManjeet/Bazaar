@@ -1,5 +1,0 @@
-source = "https://raw.githubusercontent.com/itsManjeet/packages/"
-binary = "https://manjeet.cloudtb.online/apps/"
-data = "/var/lib/app/"
-recipies = "/usr/recipies/"
-repo = ["apps", "non-free"]

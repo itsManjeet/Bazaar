@@ -24,7 +24,7 @@ func uninstallApp(widget *gtk.Button, app appData) bool {
 			time.Sleep(time.Millisecond * 50)
 		}
 	}()
-	out, err := exec.Command("sys-app", "rm", app.name, "--no-ask").Output()
+	out, err := exec.Command("app", "rm", app.name, "--no-ask").Output()
 	togo = false
 	if err != nil {
 		glib.IdleAdd(showError, string(out)+"\nError: "+err.Error())

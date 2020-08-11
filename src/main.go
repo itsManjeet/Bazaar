@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gotk3/gotk3/gdk"
-
-	"github.com/BurntSushi/toml"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+	"gopkg.in/ini.v1"
 )
 
 func main() {
@@ -16,10 +16,17 @@ func main() {
 	application, err := gtk.ApplicationNew(appID, glib.APPLICATION_FLAGS_NONE)
 	checkErr(err)
 
-	if _, err := toml.DecodeFile(configFile, &conf); err != nil {
-		log.Println(err.Error())
-	}
+	cfg, err := ini.Load(configFile)
+	checkErr(err)
 
+	conf.SourceURL = cfg.Section("url").Key("source").String()
+	conf.BinaryURL = cfg.Section("url").Key("binary").String()
+
+	conf.DataDir = cfg.Section("dir").Key("data").String()
+	conf.RecipieDir = cfg.Section("dir").Key("recipies").String()
+	conf.Repos = strings.Split(cfg.Section("default").Key("repo").String(), " ")
+
+	cacheData = make(map[string][]appData)
 	application.Connect("startup", func() {
 		log.Println("application starting")
 	})
@@ -78,13 +85,14 @@ func main() {
 			glib.IdleAdd(catListBox.Add, categoryLabel("Games", "folder-games"))
 			glib.IdleAdd(catListBox.Add, categoryLabel("Developer", "format-text-code"))
 			glib.IdleAdd(catListBox.Add, categoryLabel("System", "configure"))
+
+			glib.IdleAdd(catListBox.SelectRow, catListBox.GetRowAtY(-1))
 		}
-
-		go buildCat()
-
 		icontheme, err = gtk.IconThemeGetDefault()
 		checkErr(err)
 		applist = listapps()
+		buildCat()
+
 		window.Show()
 		application.AddWindow(window)
 

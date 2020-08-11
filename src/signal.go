@@ -1,15 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"log"
-	"os"
 	"strings"
 
-	"github.com/BurntSushi/toml"
-
 	"github.com/gotk3/gotk3/gdk"
-
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -90,7 +85,7 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 	}
 
 	cat, _ := lbl.GetText()
-
+	log.Println("selected row", cat)
 	go loadCategory(cat)
 }
 
@@ -162,19 +157,19 @@ func onApplyBtnClick() {
 }
 
 func saveConfig() {
-	buf := new(bytes.Buffer)
-	if err := toml.NewEncoder(buf).Encode(conf); err != nil {
-		log.Println(err)
-	}
+	// buf := new(bytes.Buffer)
+	// if err := toml.NewEncoder(buf).Encode(conf); err != nil {
+	// 	log.Println(err)
+	// }
 
-	fptr, err := os.OpenFile(configFile, os.O_CREATE|os.O_WRONLY, os.ModeAppend)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer fptr.Close()
+	// fptr, err := os.OpenFile(configFile, os.O_CREATE|os.O_WRONLY, os.ModeAppend)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// defer fptr.Close()
 
-	_, err = fptr.Write([]byte(buf.String()))
-	showError("error while saving file " + err.Error())
+	// _, err = fptr.Write([]byte(buf.String()))
+	// showError("error while saving file " + err.Error())
 
-	fptr.Close()
+	// fptr.Close()
 }

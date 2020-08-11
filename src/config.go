@@ -10,16 +10,16 @@ const (
 
 // Config bazaar configuration
 type Config struct {
-	SourceURL string `toml:"source"`
-	BinaryURL string `toml:"binary"`
+	SourceURL string
+	BinaryURL string
 
-	DataDir    string   `toml:"data"`
-	RecipieDir string   `toml:"recipies"`
-	Repos      []string `toml:"repo"`
+	DataDir    string
+	RecipieDir string
+	Repos      []string
 }
 
 var conf Config
-
+var cacheData map[string][]appData
 var (
 	builder     *gtk.Builder
 	icontheme   *gtk.IconTheme

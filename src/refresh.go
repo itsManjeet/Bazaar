@@ -19,7 +19,7 @@ func refreshData(refbtn *gtk.Button) {
 		gtkWid.Destroy()
 	})
 
-	cmd := exec.Command("sys-app", "rf")
+	cmd := exec.Command("app", "refresh")
 	s := true
 	glib.IdleAdd(refProgress.SetVisible, true)
 	go func() {
@@ -45,7 +45,7 @@ func refreshData(refbtn *gtk.Button) {
 		return
 	}
 
-	cmdout, _ := exec.Command("sys-app", "dry-check-update").Output()
+	cmdout, _ := exec.Command("app", "dry-check-update").Output()
 	apd := make([]appData, 0)
 	if len(cmdout) != 0 {
 		a := strings.Split(string(cmdout), "\n")
