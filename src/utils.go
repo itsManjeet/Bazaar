@@ -192,20 +192,20 @@ func setupAppPage(app appData) {
 }
 
 func loadCategory(cat string) {
+
+	animStack := getWidget("animStack").(*gtk.Stack)
+
+	glib.IdleAdd(animStack.SetVisibleChildName, "loadingPage")
 	if val, ok := cacheData[cat]; ok {
-		log.Println("loading for cache")
 		glib.IdleAdd(loadApps, val)
 
+		glib.IdleAdd(animStack.SetVisibleChildName, "listViewPage")
 		return
 	}
 
 	acl := make([]appData, 0)
 	if cat == "Market" {
-		for _, a := range listapps() {
-			if a.repo == "extra" {
-				acl = append(acl, a)
-			}
-		}
+		acl = listapps()
 	} else if cat == "Must Have" {
 		for _, a := range []string{
 			"Accessories", "Graphics", "Internet", "Multimedia", "Office",
@@ -226,15 +226,18 @@ func loadCategory(cat string) {
 			acl = append(acl, listCategory(a)...)
 		}
 	} else if cat == "System" {
-		acl = listCategory(cat)
+		for _, a := range listapps() {
+			if a.repo == "core" {
+				acl = append(acl, a)
+			}
+		}
 	} else if cat == "Games" {
 		acl = listCategory(cat)
 	}
-
-	log.Println("Cat :", cat)
 
 	cacheData[cat] = make([]appData, 0)
 	cacheData[cat] = append(cacheData[cat], acl...)
 	glib.IdleAdd(loadApps, acl)
 
+	glib.IdleAdd(animStack.SetVisibleChildName, "listViewPage")
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gotk3/gotk3/gdk"
+	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -85,11 +86,14 @@ func onCategorySelect(cbox *gtk.ListBox, selrow *gtk.ListBoxRow) {
 	}
 
 	cat, _ := lbl.GetText()
-	log.Println("selected row", cat)
 	go loadCategory(cat)
 }
 
 func onSearchChanged(searchBox *gtk.SearchEntry) {
+	animStack := getWidget("animStack").(*gtk.Stack)
+
+	glib.IdleAdd(animStack.SetVisibleChildName, "loadingPage")
+
 	curapp, _ := searchBox.GetText()
 	searchapp := make([]appData, 0)
 	for _, a := range applist {
@@ -99,6 +103,7 @@ func onSearchChanged(searchBox *gtk.SearchEntry) {
 	}
 
 	loadApps(searchapp)
+	glib.IdleAdd(animStack.SetVisibleChildName, "listViewPage")
 }
 
 func onRefresh(refbtn *gtk.Button) {

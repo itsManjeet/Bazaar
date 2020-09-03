@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -200,7 +199,11 @@ func listapps() []appData {
 
 	applist := make([]appData, 0)
 
-	repo, err := ioutil.ReadDir(conf.RecipieDir)
+	r, err := os.Open(conf.RecipieDir)
+	checkErr(err)
+
+	repo, err := r.Readdir(-1)
+	r.Close()
 	checkErr(err)
 
 	for _, r := range repo {
@@ -208,7 +211,11 @@ func listapps() []appData {
 			continue
 		}
 
-		appdir, err := ioutil.ReadDir(path.Join(conf.RecipieDir, r.Name()))
+		x, err := os.Open(path.Join(conf.RecipieDir, r.Name()))
+		checkErr(err)
+
+		appdir, err := x.Readdir(-1)
+		x.Close()
 		checkErr(err)
 		for _, a := range appdir {
 			recpp := path.Join(conf.RecipieDir, r.Name(), a.Name(), "recipie")

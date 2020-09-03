@@ -1,0 +1,10 @@
+// Allow users belonging to install group access to install apps
+
+polkit.addRule(function(action, subject) {
+	if ((action.id == "org.freedesktop.policykit.pkexec.bazaar") &&
+		subject.local &&
+		subject.active &&
+		subject.isInGroup("install")) {
+		return polkit.Result.YES;
+	}
+});

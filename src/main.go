@@ -14,10 +14,14 @@ import (
 func main() {
 
 	application, err := gtk.ApplicationNew(appID, glib.APPLICATION_FLAGS_NONE)
-	checkErr(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	cfg, err := ini.Load(configFile)
-	checkErr(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	conf.SourceURL = cfg.Section("url").Key("source").String()
 	conf.BinaryURL = cfg.Section("url").Key("binary").String()
@@ -93,6 +97,7 @@ func main() {
 		applist = listapps()
 		buildCat()
 
+		go loadCategory("Must Have")
 		window.Show()
 		application.AddWindow(window)
 
